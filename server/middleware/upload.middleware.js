@@ -9,15 +9,43 @@ import { v2 as cloudinary } from 'cloudinary';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Helper function to get absolute upload path
+const getUploadBasePath = () => {
+  // Use /tmp directory for Vercel or similar environments
+  if (process.env.VERCEL) {
+    return '/tmp';
+  }
+  // For local development, use project root
+  return path.join(__dirname, '..', '..', 'uploads');
+};
+
 // Ensure upload directories exist
 const createUploadDirs = () => {
+  const baseUploadPath = getUploadBasePath();
   const dirs = ['images', 'documents', 'attachments'];
-  dirs.forEach(dir => {
-    const dirPath = path.join('uploads', dir);
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
+  
+  try {
+    // First ensure base upload directory exists
+    if (!fs.existsSync(baseUploadPath)) {
+      fs.mkdirSync(baseUploadPath, { recursive: true });
     }
-  });
+
+    // Then create subdirectories
+    dirs.forEach(dir => {
+      const dirPath = path.join(baseUploadPath, dir);
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+      }
+    });
+  } catch (error) {
+    console.error('Error creating upload directories:', error);
+    // Don't throw error - let the application continue
+  }
+};
+
+// Helper function to get temp upload path
+const getTempUploadPath = (type) => {
+  return path.join(getUploadBasePath(), type);
 };
 
 createUploadDirs();
