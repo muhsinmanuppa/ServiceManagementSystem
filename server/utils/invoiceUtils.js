@@ -9,7 +9,7 @@ export const generateInvoice = async (payment) => {
     const invoicePath = path.join('uploads', 'invoices', `${invoiceNumber}.pdf`);
 
     // Ensure directory exists
-    fs.mkdirSync(path.join('uploads', 'invoices'), { recursive: true });
+    // fs.mkdirSync(path.join('uploads', 'invoices'), { recursive: true });
 
     // Pipe PDF to file
     doc.pipe(fs.createWriteStream(invoicePath));

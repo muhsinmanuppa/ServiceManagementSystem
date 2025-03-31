@@ -267,3 +267,6 @@ process.on('SIGTERM', async () => {
   await mongoose.connection.close();
   process.exit(0);
 });
+
+
+export default app;
