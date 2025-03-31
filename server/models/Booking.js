@@ -1,0 +1,186 @@
+import mongoose from 'mongoose';
+
+// Define valid statuses as a constant that can be exported
+export const VALID_BOOKING_STATUSES = {
+  PENDING: 'pending',
+  QUOTED: 'quoted',
+  CONFIRMED: 'confirmed',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled'
+};
+
+const bookingSchema = new mongoose.Schema({
+  service: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Service',
+    required: true
+  },
+  client: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  provider: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  scheduledDate: {
+    type: Date,
+    required: true
+  },
+  totalAmount: {
+    type: Number,
+    required: true
+  },
+  status: {
+    type: String,
+    enum: Object.values(VALID_BOOKING_STATUSES),
+    default: VALID_BOOKING_STATUSES.PENDING
+  },
+  payment: {
+    status: {
+      type: String,
+      enum: ['pending', 'paid', 'refunded'],
+      default: 'pending'
+    },
+    orderId: String,
+    paymentId: String,
+    paidAt: Date
+  },
+  notes: String,
+  rating: {
+    score: Number,
+    review: String,
+    createdAt: Date
+  },
+  quote: {
+    price: Number,
+    estimatedHours: Number,
+    notes: String,
+    status: {
+      type: String,
+      enum: ['pending', 'accepted', 'declined'],
+      default: 'pending'
+    },
+    submittedAt: Date,
+    respondedAt: Date
+  },
+  tracking: [{
+    status: {
+      type: String,
+      enum: Object.values(VALID_BOOKING_STATUSES),
+      required: true
+    },
+    timestamp: { type: Date, default: Date.now },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    notes: String
+  }],
+  completedAt: Date
+}, {
+  timestamps: true
+});
+
+// Virtual field for booking duration (in days)
+bookingSchema.virtual('duration').get(function() {
+  if (!this.completedAt) return null;
+  
+  const startDate = new Date(this.scheduledDate);
+  const endDate = new Date(this.completedAt);
+  
+  const durationMs = endDate - startDate;
+  const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24));
+  
+  return durationDays;
+});
+
+// Method to check if booking is paid
+bookingSchema.methods.isPaid = function() {
+  return this.payment && this.payment.status === 'paid';
+};
+
+// Method to get current status with timestamp
+bookingSchema.methods.getCurrentStatus = function() {
+  if (!this.tracking || this.tracking.length === 0) {
+    return {
+      status: this.status,
+      timestamp: this.updatedAt,
+      notes: null
+    };
+  }
+  
+  // Get the latest tracking entry
+  const latestTracking = this.tracking[this.tracking.length - 1];
+  
+  return {
+    status: latestTracking.status,
+    timestamp: latestTracking.timestamp,
+    notes: latestTracking.notes
+  };
+};
+
+// Add method to handle quote responses
+bookingSchema.methods.handleQuoteResponse = async function(approved, userId) {
+  this.quote.approved = approved;
+  this.quote.respondedAt = new Date();
+  this.status = approved ? 'confirmed' : 'declined';
+  
+  // Add to tracking history
+  this.tracking.push({
+    status: this.status,
+    timestamp: new Date(),
+    updatedBy: userId,
+    notes: `Quote ${approved ? 'accepted' : 'declined'} by client`
+  });
+  
+  return this.save();
+};
+
+// Add method to handle quote update
+bookingSchema.methods.updateQuote = async function(quoteData, providerId) {
+  this.quote = {
+    ...quoteData,
+    submittedAt: new Date(),
+    status: 'pending'
+  };
+  this.status = 'quoted';
+  this.totalAmount = quoteData.price;
+  
+  this.tracking.push({
+    status: 'quoted',
+    timestamp: new Date(),
+    updatedBy: providerId,
+    notes: 'Quote provided by service provider'
+  });
+
+  return this.save();
+};
+
+// Include virtuals when converting to JSON
+bookingSchema.set('toJSON', { virtuals: true });
+bookingSchema.set('toObject', { virtuals: true });
+
+// Add a pre-save middleware to track status changes
+bookingSchema.pre('save', function(next) {
+  if (this.isModified('status')) {
+    if (!Object.values(VALID_BOOKING_STATUSES).includes(this.status)) {
+      next(new Error(`Invalid status value: ${this.status}`));
+      return;
+    }
+    this.tracking.push({
+      status: this.status,
+      timestamp: new Date(),
+      updatedBy: this.updatedBy || this.provider,
+      notes: `Status updated to ${this.status}`
+    });
+  }
+  next();
+});
+
+const Booking = mongoose.model('Booking', bookingSchema);
+export default Booking;
