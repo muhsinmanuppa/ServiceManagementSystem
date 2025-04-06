@@ -1,35 +1,58 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-let isConnected = false; // Track connection status (for Vercel functions)
+let cached = global.mongoose;
 
-export const connectDB = async () => {
-  if (isConnected) {
-    console.log('✅ Using existing MongoDB connection');
-    return;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+const connectDB = async () => {
+  if (cached.conn) {
+    console.log("✅ Using existing MongoDB connection");
+    return cached.conn;
+  }
+
+  if (!process.env.MONGODB_URI) {
+    throw new Error('Please define MONGODB_URI in environment variables');
+  }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      family: 4
+    };
+
+    cached.promise = mongoose.connect(process.env.MONGODB_URI, opts)
+      .then(mongoose => {
+        console.log('🟢 DB connected');
+        return mongoose;
+      })
+      .catch(err => {
+        console.error('❌ MongoDB connection error:', err);
+        cached.promise = null;
+        throw err;
+      });
   }
 
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000, // Fail fast if DB can't be reached
-      tls: true, // Ensure secure connection
-    });
-
-    isConnected = true;
-    console.log(`✅ MongoDB connected: ${conn.connection.host}`);
+    cached.conn = await cached.promise;
+    return cached.conn;
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
-    process.exit(1);
+    cached.promise = null;
+    throw error;
   }
 };
 
-export const disconnectDB = async () => {
-  try {
-    await mongoose.connection.close();
-    isConnected = false;
-    console.log('🔌 MongoDB connection closed');
-  } catch (error) {
-    console.error('❌ Error closing MongoDB connection:', error.message);
+// Add disconnect function
+const disconnectDB = async () => {
+  if (cached.conn) {
+    await mongoose.disconnect();
+    cached.conn = null;
+    cached.promise = null;
   }
 };
+
+export { connectDB, disconnectDB };

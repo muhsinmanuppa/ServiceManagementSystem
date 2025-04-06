@@ -213,16 +213,17 @@ const initializeServer = async () => {
     app.use('/api/provider', providerRoutes);
 
 
-    // Global error handler - improve to provide more details
+    // Global error handler - improve to log more details
     app.use((err, req, res, next) => {
-      console.error('Error:', {
+      console.error('❌ Global Error Handler:', {
         message: err.message,
         stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
         url: req.url,
         method: req.method,
-        body: req.body
+        body: req.body,
+        headers: req.headers
       });
-      
+
       // Check for MongoDB connection errors
       if (err.name === 'MongooseError' || err.name === 'MongoError') {
         return res.status(503).json({
@@ -231,7 +232,7 @@ const initializeServer = async () => {
           timestamp: new Date().toISOString()
         });
       }
-      
+
       res.status(err.status || 500).json({
         message: err.message || 'Internal Server Error',
         status: 'error',
