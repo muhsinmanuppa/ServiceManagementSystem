@@ -201,7 +201,10 @@ const initializeServer = async () => {
 
 
     app.use('/api/payments', paymentRoutes);
-
+    
+    app.get('/', (req, res) => {
+      res.send('API is running...');
+    });
     // Move this before your error handling middleware
     app.use((req, res, next) => {
       console.log(`${req.method} ${req.path}`, {
@@ -245,16 +248,7 @@ const initializeServer = async () => {
     });
 
     // Update server startup for Vercel
-    if (process.env.VERCEL) {
-      // Export the Express app for Vercel
-      module.exports = app;
-    } else {
-      // Start HTTP server normally for local development
-      const PORT = process.env.PORT || 5000;
-      server.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-      });
-    }
+    
   } catch (error) {
     console.error('Server initialization failed:', error);
     process.exit(1);
@@ -263,13 +257,5 @@ const initializeServer = async () => {
 
 // Start the server
 initializeServer().catch(console.error);
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received. Closing HTTP server and database connection...');
-  await mongoose.connection.close();
-  process.exit(0);
-});
-
 
 export default app;
