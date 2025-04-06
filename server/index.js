@@ -75,7 +75,9 @@ const initializeServer = async () => {
 
     const allowedOrigins = [
       'http://localhost:5173',
-      'http://localhost:5174',
+      'http://localhost:5174','https://service-management-system-d5mdt5i2e-muhsins-projects-b8ca763f.vercel.app',
+      'https://service-management-system-git-main-muhsins-projects-b8ca763f.vercel.app',
+      'https://service-management-system-puce.vercel.app/',
       process.env.CORS_ORIGIN
     ].filter(Boolean);
 
