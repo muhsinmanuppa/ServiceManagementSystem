@@ -86,7 +86,7 @@ const Home = () => {
             </div>
             <div className="md:w-1/2 md:flex justify-end">
               <img 
-                src="https://via.placeholder.com/600x400" 
+                src="" 
                 alt="Service hub illustration" 
                 className="rounded-lg shadow-lg w-full md:max-w-md object-cover"
               />
@@ -115,7 +115,7 @@ const Home = () => {
                       <div className="md:flex">
                         <div className="md:w-1/2">
                           <img 
-                            src={service.imageUrl || 'https://via.placeholder.com/500x300'} 
+                            src={service.imageUrl || ''} 
                             className="w-full h-64 md:h-full object-cover" 
                             alt={service.title}
                           />

@@ -141,13 +141,13 @@ const ClientBookings = () => {
                   <td>
                     <div className="d-flex align-items-center">
                       <img 
-                        src={booking.service?.imageUrl || 'https://via.placeholder.com/50x50'} 
+                        src={booking.service?.imageUrl || ''} 
                         alt={booking.service?.title || 'Service'}
                         className="rounded me-2"
                         style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = 'https://via.placeholder.com/50x50?text=Service';
+                          e.target.src = '';
                         }}
                       />
                       <div>{booking.service?.title || 'Unknown Service'}</div>

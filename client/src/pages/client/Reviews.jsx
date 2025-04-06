@@ -30,7 +30,7 @@ const Reviews = () => {
             service: {
               _id: 'svc1',
               title: 'House Cleaning',
-              imageUrl: 'https://via.placeholder.com/100x100?text=Cleaning'
+              imageUrl: ''
             },
             provider: {
               _id: 'prov1',
@@ -46,7 +46,7 @@ const Reviews = () => {
             service: {
               _id: 'svc2',
               title: 'Plumbing Repair',
-              imageUrl: 'https://via.placeholder.com/100x100?text=Plumbing'
+              imageUrl: ''
             },
             provider: {
               _id: 'prov2',
@@ -62,7 +62,7 @@ const Reviews = () => {
             service: {
               _id: 'svc3',
               title: 'Electrical Services',
-              imageUrl: 'https://via.placeholder.com/100x100?text=Electrical'
+              imageUrl: ''
             },
             provider: {
               _id: 'prov3',
@@ -263,7 +263,7 @@ const Reviews = () => {
                           style={{ width: '60px', height: '60px', objectFit: 'cover' }}
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/60x60?text=Service';
+                            e.target.src = '';
                           }}
                         />
                         <div>

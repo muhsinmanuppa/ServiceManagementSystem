@@ -212,7 +212,7 @@ const ServiceManagement = () => {
                         style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = 'https://via.placeholder.com/50?text=No+Image';
+                          e.target.src = '';
                         }}
                       />
                       <div>

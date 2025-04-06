@@ -77,7 +77,7 @@ const Services = () => {
                     style={{ height: '200px', objectFit: 'cover' }}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/200x200?text=No+Image';
+                      e.target.src = '';
                     }}
                   />
                 )}
