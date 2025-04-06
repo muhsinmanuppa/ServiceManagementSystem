@@ -22,8 +22,6 @@ const connectDB = async () => {
       maxPoolSize: process.env.VERCEL ? 5 : 10, // Reduce pool size for Vercel
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
     };
 
     cached.promise = mongoose.connect(process.env.MONGODB_URI, opts)
