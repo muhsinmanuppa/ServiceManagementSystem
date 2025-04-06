@@ -16,16 +16,6 @@ const __dirname = path.dirname(__filename);
 // Load environment variables from .env file (specify the path explicitly)
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-// Log essential configuration for debugging
-console.log('Environment check:');
-console.log('- PORT:', process.env.PORT);
-console.log('- MONGODB_URI:', process.env.MONGODB_URI ? 'Defined' : 'Undefined');
-console.log('- JWT_SECRET:', process.env.JWT_SECRET ? 'Defined' : 'Undefined');
-console.log('- SMTP_HOST:', process.env.SMTP_HOST);
-console.log('- SMTP_PORT:', process.env.SMTP_PORT);
-console.log('- SMTP_USER:', process.env.SMTP_USER ? 'Defined' : 'Undefined');
-console.log('- CLIENT_URL:', process.env.CLIENT_URL);
-
 // Import routes with proper default exports
 import authRouter from './routes/auth.js';
 import serviceRoutes from './routes/provider/service.routes.js';
@@ -34,7 +24,6 @@ import reviewRoutes from './routes/review.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import bookingRoutes from './routes/booking.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
-import testRoutes from './routes/test.routes.js';
 import adminRoutes from './routes/admin/admin.routes.js';
 import providerRoutes from './routes/provider/provider.routes.js';
 import profileRoutes from './routes/profile/profile.routes.js'; // Updated import
@@ -88,7 +77,6 @@ const initializeServer = async () => {
         if (allowedOrigins.indexOf(origin) !== -1) {
           callback(null, true);
         } else {
-          console.log("Blocked origin:", origin);
           callback(null, true); // Still allow in development mode
         }
       },
@@ -97,14 +85,6 @@ const initializeServer = async () => {
       allowedHeaders: ['Content-Type', 'Authorization']
     }));
     
-    app.get('/api/test/ping', (req, res) => {
-      res.json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        message: 'Server is running'
-      });
-    });
-
     app.get('/api/health', (req, res) => {
       res.json({
         status: 'ok',
@@ -117,15 +97,6 @@ const initializeServer = async () => {
     // After public routes, setup middleware
     app.use(express.json({ limit: '1mb' }));
     app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-
-    // Add request logging - ONLY ONCE
-    app.use((req, res, next) => {
-      console.log(`${req.method} ${req.url}`, {
-        hasAuth: !!req.headers.authorization,
-        body: req.body ? 'yes' : 'no'
-      });
-      next();
-    });
 
     // Middleware setup - add these before your routes
     app.use(express.json({
@@ -141,12 +112,6 @@ const initializeServer = async () => {
     }));
 
     app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-
-    // Add request logging middleware
-    app.use((req, res, next) => {
-      console.log(`${req.method} ${req.url}`, req.body ? 'with body' : 'no body');
-      next();
-    });
 
     app.use(express.json());
 
@@ -180,7 +145,6 @@ const initializeServer = async () => {
     app.use('/api/reviews', reviewRoutes);
     app.use('/api/bookings', bookingRoutes);
     app.use('/api/payments', paymentRoutes);
-    app.use('/api/test', testRoutes);
     app.use('/api/client', clientRoutes); // Keep only one mount point for client routes
 
     // Mount profile routes in the correct order
@@ -200,6 +164,20 @@ const initializeServer = async () => {
 
 
     app.use('/api/payments', paymentRoutes);
+    // Move this before your error handling middleware
+    app.use((req, res, next) => {
+      console.log(`${req.method} ${req.path}`, {
+        body: !!req.body,
+        file: !!req.file,
+        auth: !!req.headers.authorization
+      });
+      next();
+    });
+
+    // Update route mounting
+    app.use('/api/client', clientRoutes);
+    app.use('/api/provider', providerRoutes);
+
 
     // Move this before your error handling middleware
     app.use((req, res, next) => {

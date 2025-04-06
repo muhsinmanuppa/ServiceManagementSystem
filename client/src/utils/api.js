@@ -1,40 +1,21 @@
 import axios from 'axios';
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000;
-
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api', // Add fallback
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
   },
-  withCredentials: true // Add this to handle CORS with credentials
+  withCredentials: true
 });
 
-// Add request interceptor for debugging
-api.interceptors.request.use(
-  config => {
-    console.log('Request:', {
-      method: config.method,
-      url: config.url,
-      baseURL: config.baseURL,
-      data: config.data
-    });
-    return config;
-  },
-  error => Promise.reject(error)
-);
-
-// Define public paths that don't require authentication
+// Remove test/ping from public paths
 const publicPaths = [
   'auth/login',
   'auth/register',
   'auth/send-otp',
   'auth/resend-otp',
-  'auth/verify-otp',
-  'test/ping',  // Add this
-  'health'      // Add this
+  'auth/verify-otp'
 ];
 
 // Update profile endpoint logic
@@ -86,31 +67,6 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
-// Add debugging for development mode
-if (import.meta.env.DEV) {
-  api.interceptors.request.use(
-    config => {
-      console.log(`API Request: ${config.method.toUpperCase()} ${config.url}`);
-      return config;
-    },
-    error => {
-      console.error('API Request Error:', error);
-      return Promise.reject(error);
-    }
-  );
-
-  api.interceptors.response.use(
-    response => {
-      console.log(`API Response: ${response.status} for ${response.config.url}`);
-      return response;
-    },
-    error => {
-      console.error(`API Response Error: ${error.response?.status || 'Network Error'} for ${error.config?.url}`, error);
-      return Promise.reject(error);
-    }
-  );
-}
 
 // Add response interceptor with retry logic
 api.interceptors.response.use(
@@ -257,49 +213,6 @@ api.interceptors.response.use(
   }
 );
 
-// Add connection check method
-const checkServerConnection = async () => {
-  try {
-    const response = await api.get('/test/ping', { 
-      timeout: 3000,
-      _suppressErrorNotification: true 
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Server connection check failed:', error);
-    throw error;
-  }
-};
-
-// Add connection status monitoring
-let checkConnectionInterval;
-
-const checkConnection = async () => {
-  try {
-    await api.get('/health', {
-      _suppressErrorNotification: true,
-      _isHealthCheck: true
-    });
-    // If successful, clear any existing error messages
-    window.dispatchEvent(new CustomEvent('api-error-clear'));
-  } catch (error) {
-    // Connection failed
-    console.error('API connection check failed:', error);
-  }
-};
-
-// Start monitoring when the app loads
-if (typeof window !== 'undefined') {
-  checkConnectionInterval = setInterval(checkConnection, 30000); // Check every 30 seconds
-}
-
-// Clean up on unmount
-window.addEventListener('unload', () => {
-  if (checkConnectionInterval) {
-    clearInterval(checkConnectionInterval);
-  }
-});
-
 // Add interceptor to log payment-related requests
 api.interceptors.request.use(
   config => {
@@ -354,5 +267,5 @@ api.interceptors.response.use(
   }
 );
 
-// Export both the api instance and connection check
-export { api as default, checkServerConnection };
+// Export the api instance
+export { api as default };

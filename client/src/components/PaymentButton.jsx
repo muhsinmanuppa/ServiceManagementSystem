@@ -13,7 +13,7 @@ const PaymentButton = ({ booking, onSuccess, onCancel }) => {
       const response = await api.post(`/bookings/${booking._id}/payment/initiate`);
       
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_ID',
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: response.data.amount,
         currency: response.data.currency,
         name: "Service Booking",
