@@ -1,4 +1,4 @@
-// import Review from '../models/Review.js';
+import Review from '../models/Review.js'; // Add this line
 import Service from '../models/Service.js';
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
