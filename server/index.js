@@ -16,8 +16,6 @@ const __dirname = path.dirname(__filename);
 // Load environment variables from .env file (specify the path explicitly)
 dotenv.config();
 
-
-
 // Import routes with proper default exports
 import authRouter from './routes/auth.js';
 import serviceRoutes from './routes/provider/service.routes.js';
@@ -64,26 +62,27 @@ const initializeServer = async () => {
       next();
     });
 
+    // Update CORS configuration to dynamically handle multiple origins
     const allowedOrigins = [
       'http://localhost:5173',
-      'http://localhost:5174','https://service-management-system-d5mdt5i2e-muhsins-projects-b8ca763f.vercel.app',
+      'http://localhost:5174',
+      'https://service-management-system-d5mdt5i2e-muhsins-projects-b8ca763f.vercel.app',
       'https://service-management-system-git-main-muhsins-projects-b8ca763f.vercel.app',
-      'https://service-management-system-puce.vercel.app','https://service-management-system-server.vercel.app',
+      'https://service-management-system-puce.vercel.app',
+      'https://service-management-system-server.vercel.app',
       process.env.CORS_ORIGIN
     ].filter(Boolean);
 
     app.use(cors({
-      origin: function(origin, callback) {
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) !== -1) {
+      origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
-          callback(null, true); // Still allow in development mode
+          callback(new Error('Not allowed by CORS'));
         }
       },
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Add PATCH
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization']
     }));
     
@@ -244,10 +243,7 @@ const initializeServer = async () => {
     });
 
     // Update server startup for Vercel
-    if (process.env.VERCEL) {
-      // Export the Express app for Vercel
-      module.exports = app;
-    } else {
+    if (!process.env.VERCEL) {
       // Start HTTP server normally for local development
       const PORT = process.env.PORT || 5000;
       server.listen(PORT, () => {

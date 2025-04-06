@@ -19,7 +19,7 @@ const connectDB = async () => {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: process.env.VERCEL ? 5 : 10,
+      maxPoolSize: process.env.VERCEL ? 5 : 10, // Reduce pool size for Vercel
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
       useNewUrlParser: true,

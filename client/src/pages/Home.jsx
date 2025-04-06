@@ -58,16 +58,7 @@ const Home = () => {
     <>
       <PublicNavbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Featured Services Debug */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mb-4">
-            <div className="w-full">
-              <small className="text-gray-400 text-xs">
-                Featured Services Count: {featuredServices.length}
-              </small>
-            </div>
-          </div>
-        )}
+   
 
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl shadow-xl mb-16 overflow-hidden">
@@ -85,11 +76,11 @@ const Home = () => {
               </div>
             </div>
             <div className="md:w-1/2 md:flex justify-end">
-              <img 
+              {/* <img 
                 src="" 
                 alt="Service hub illustration" 
                 className="rounded-lg shadow-lg w-full md:max-w-md object-cover"
-              />
+              /> */}
             </div>
           </div>
         </div>

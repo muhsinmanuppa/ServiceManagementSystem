@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "vercel-build": "echo 'Vercel build step complete'",
+    "vercel-build": "npm install",
     "build": "npm install"
   },
   "keywords": [],
