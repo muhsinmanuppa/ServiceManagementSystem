@@ -1,69 +1,34 @@
 import Service from '../../models/Service.js';
-import { v2 as cloudinary } from 'cloudinary';
-import fs from 'fs/promises';
-import User from '../../models/User.js';
 import mongoose from 'mongoose';
+import { handleFileUpload } from '../../middleware/upload.middleware.js';
 
 export const createService = async (req, res) => {
   try {
-    const { title, description, price, category } = req.body;
-
-    // Validate input
-    if (!title?.trim() || !description?.trim() || !price || !category) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields'
-      });
-    }
-
-    // Handle buffered image upload
     let imageUrl = null;
+    
     if (req.file) {
-      try {
-        const b64 = Buffer.from(req.file.buffer).toString('base64');
-        const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-        const uploadResult = await cloudinary.uploader.upload(dataURI, {
-          folder: 'services',
-          width: 1000,
-          crop: 'scale',
-          resource_type: 'auto'
-        });
-        imageUrl = uploadResult.secure_url;
-        
-        console.log('Uploaded image URL:', imageUrl);
-      } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
-        return res.status(400).json({
-          success: false,
-          message: 'Error uploading image'
-        });
-      }
+      const uploadResult = await handleFileUpload(req.file);
+      imageUrl = uploadResult.url;
     }
 
-    // Create service
     const service = new Service({
-      provider: req.user._id,
-      title: title.trim(),
-      description: description.trim(),
-      price: parseFloat(price),
-      category,
-      imageUrl
+      ...req.body,
+      imageUrl,
+      provider: req.user._id
     });
 
     await service.save();
-
+    
     res.status(201).json({
       success: true,
       message: 'Service created successfully',
       service
     });
-
   } catch (error) {
-    console.error('Service creation error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create service',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Error creating service',
+      error: error.message
     });
   }
 };
@@ -200,11 +165,8 @@ export const getServiceById = async (req, res) => {
 
 export const updateService = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title, description, price, category } = req.body;
-
     const service = await Service.findOne({ 
-      _id: id,
+      _id: req.params.id,
       provider: req.user._id 
     });
 
@@ -215,33 +177,12 @@ export const updateService = async (req, res) => {
       });
     }
 
-    // Handle buffered image upload if new image is provided
     if (req.file) {
-      try {
-        const b64 = Buffer.from(req.file.buffer).toString('base64');
-        const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-        const uploadResult = await cloudinary.uploader.upload(dataURI, {
-          folder: 'services',
-          width: 1000,
-          crop: 'scale',
-          resource_type: 'auto'
-        });
-        service.imageUrl = uploadResult.secure_url;
-      } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
-        return res.status(400).json({
-          success: false,
-          message: 'Error uploading image'
-        });
-      }
+      const uploadResult = await handleFileUpload(req.file);
+      service.imageUrl = uploadResult.url;
     }
 
-    // Update other fields
-    if (title) service.title = title.trim();
-    if (description) service.description = description.trim();
-    if (price) service.price = parseFloat(price);
-    if (category) service.category = category;
-
+    Object.assign(service, req.body);
     await service.save();
 
     res.json({
@@ -249,9 +190,7 @@ export const updateService = async (req, res) => {
       message: 'Service updated successfully',
       service
     });
-
   } catch (error) {
-    console.error('Error updating service:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to update service',

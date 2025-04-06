@@ -33,9 +33,6 @@ coverage
 # Optional eslint cache
 .eslintcache
 
-# Uploaded files
-uploads/*
-!uploads/.gitkeep
 
 # IDE
 .idea

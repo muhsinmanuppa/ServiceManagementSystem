@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticateUser, authorizeRoles } from '../../middleware/auth.middleware.js';
-import { uploadDocs } from '../../middleware/upload.middleware.js';
+import { uploadDocs, handleUploadError } from '../../middleware/upload.middleware.js';
 import { 
   createService, 
   updateService, 
@@ -11,15 +11,13 @@ import {
 
 const router = express.Router();
 
-// Apply auth middleware to all provider routes
 router.use(authenticateUser);
 router.use(authorizeRoles('provider'));
 
-// Service routes - using cloudinary upload
 router.get('/', getProviderServices);
-router.get('/:serviceId', getServiceById);
-router.post('/', uploadDocs.single('serviceImage'), createService);
-router.put('/:serviceId', uploadDocs.single('serviceImage'), updateService);
-router.delete('/:serviceId', deleteService);
+router.get('/:id', getServiceById);
+router.post('/', uploadDocs.single('serviceImage'), handleUploadError, createService);
+router.put('/:id', uploadDocs.single('serviceImage'), handleUploadError, updateService);
+router.delete('/:id', deleteService);
 
 export default router;
