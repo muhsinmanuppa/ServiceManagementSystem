@@ -66,7 +66,7 @@ const initializeServer = async () => {
       'http://localhost:5173',
       'http://localhost:5174','https://service-management-system-d5mdt5i2e-muhsins-projects-b8ca763f.vercel.app',
       'https://service-management-system-git-main-muhsins-projects-b8ca763f.vercel.app',
-      'https://service-management-system-puce.vercel.app/',
+      'https://service-management-system-puce.vercel.app',
       process.env.CORS_ORIGIN
     ].filter(Boolean);
 
@@ -85,6 +85,17 @@ const initializeServer = async () => {
       allowedHeaders: ['Content-Type', 'Authorization']
     }));
     
+    // Add root route handler
+    app.get('/', (req, res) => {
+      res.json({
+        message: 'Service Management System API',
+        status: 'running',
+        version: '1.0.0',
+        documentation: '/api/docs'
+      });
+    });
+
+    // Health check endpoint
     app.get('/api/health', (req, res) => {
       res.json({
         status: 'ok',
@@ -92,6 +103,14 @@ const initializeServer = async () => {
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV
       });
+    });
+
+    // API routes prefix - add this before other routes
+    app.use('/api', (req, res, next) => {
+      if (!req.path.startsWith('/')) {
+        req.url = '/' + req.url; // Ensure all paths start with /
+      }
+      next();
     });
 
     // After public routes, setup middleware
@@ -128,7 +147,7 @@ const initializeServer = async () => {
     app.use('/api/provider', providerRoutes);
 
 
-    // Public routes
+    // Public routes - ensure they all start with /api
     app.use('/api/services', clientServiceRoutes);
     app.use('/api/categories', categoryRoutes);
     app.use('/api/auth', authRouter);
