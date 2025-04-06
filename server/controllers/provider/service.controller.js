@@ -5,7 +5,6 @@ import User from '../../models/User.js';
 import mongoose from 'mongoose';
 
 export const createService = async (req, res) => {
-  let uploadedFile = null;
   try {
     const { title, description, price, category } = req.body;
 
@@ -17,24 +16,29 @@ export const createService = async (req, res) => {
       });
     }
 
-    // Handle single image upload
+    // Handle buffered image upload
     let imageUrl = null;
     if (req.file) {
-      uploadedFile = req.file.path;
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'services',
-        width: 1000,
-        crop: 'scale'
-      });
-      imageUrl = result.secure_url;
-      
-      // Log the uploaded image URL for debugging
-      console.log('Uploaded image URL:', imageUrl);
+      try {
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+        const uploadResult = await cloudinary.uploader.upload(dataURI, {
+          folder: 'services',
+          width: 1000,
+          crop: 'scale',
+          resource_type: 'auto'
+        });
+        imageUrl = uploadResult.secure_url;
+        
+        console.log('Uploaded image URL:', imageUrl);
+      } catch (uploadError) {
+        console.error('Image upload error:', uploadError);
+        return res.status(400).json({
+          success: false,
+          message: 'Error uploading image'
+        });
+      }
     }
-
-    // Add this before creating service
-    const user = await User.findById(req.user._id);
-    const isVerified = user?.isVerified || false;
 
     // Create service
     const service = new Service({
@@ -47,11 +51,6 @@ export const createService = async (req, res) => {
     });
 
     await service.save();
-    
-    // Cleanup temporary file
-    if (uploadedFile) {
-      await fs.unlink(uploadedFile).catch(console.error);
-    }
 
     res.status(201).json({
       success: true,
@@ -60,11 +59,6 @@ export const createService = async (req, res) => {
     });
 
   } catch (error) {
-    // Cleanup temporary file on error
-    if (uploadedFile) {
-      await fs.unlink(uploadedFile).catch(console.error);
-    }
-    
     console.error('Service creation error:', error);
     res.status(500).json({
       success: false,
@@ -205,7 +199,6 @@ export const getServiceById = async (req, res) => {
 };
 
 export const updateService = async (req, res) => {
-  let uploadedFile = null;
   try {
     const { id } = req.params;
     const { title, description, price, category } = req.body;
@@ -222,15 +215,25 @@ export const updateService = async (req, res) => {
       });
     }
 
-    // Handle image upload if new image is provided
+    // Handle buffered image upload if new image is provided
     if (req.file) {
-      uploadedFile = req.file.path;
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'services',
-        width: 1000,
-        crop: 'scale'
-      });
-      service.imageUrl = result.secure_url;
+      try {
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+        const uploadResult = await cloudinary.uploader.upload(dataURI, {
+          folder: 'services',
+          width: 1000,
+          crop: 'scale',
+          resource_type: 'auto'
+        });
+        service.imageUrl = uploadResult.secure_url;
+      } catch (uploadError) {
+        console.error('Image upload error:', uploadError);
+        return res.status(400).json({
+          success: false,
+          message: 'Error uploading image'
+        });
+      }
     }
 
     // Update other fields
@@ -241,11 +244,6 @@ export const updateService = async (req, res) => {
 
     await service.save();
 
-    // Cleanup uploaded file
-    if (uploadedFile) {
-      await fs.unlink(uploadedFile).catch(console.error);
-    }
-
     res.json({
       success: true,
       message: 'Service updated successfully',
@@ -253,11 +251,6 @@ export const updateService = async (req, res) => {
     });
 
   } catch (error) {
-    // Cleanup uploaded file on error
-    if (uploadedFile) {
-      await fs.unlink(uploadedFile).catch(console.error);
-    }
-
     console.error('Error updating service:', error);
     res.status(500).json({
       success: false,

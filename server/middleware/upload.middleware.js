@@ -88,9 +88,12 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Create properly configured multer instance for each use case
+// Add this after existing imports
+const memoryStorage = multer.memoryStorage();
+
+// Replace existing imageUpload configuration with this:
 const imageUpload = multer({ 
-  storage,
+  storage: memoryStorage,
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
@@ -175,9 +178,6 @@ export const verificationUpload = multer({
 }).single('document');
 
 // Configure multer for memory storage
-const memoryStorage = multer.memoryStorage();
-
-// Create multer instance with memory storage
 export const uploadDocs = multer({
   storage: memoryStorage,
   limits: {
