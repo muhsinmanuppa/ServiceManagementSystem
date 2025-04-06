@@ -14,7 +14,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables from .env file (specify the path explicitly)
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config();
+
+
 
 // Import routes with proper default exports
 import authRouter from './routes/auth.js';

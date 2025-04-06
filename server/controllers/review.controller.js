@@ -2,9 +2,18 @@ import Review from '../models/Review.js';
 import Service from '../models/Service.js';
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
+import mongoose from 'mongoose';
+
+// Add error wrapper function
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
 
 // Create a new review
-export const createReview = async (req, res) => {
+export const createReview = asyncHandler(async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { serviceId, bookingId, rating, comment } = req.body;
     
@@ -61,13 +70,13 @@ export const createReview = async (req, res) => {
       verified: bookingVerified
     });
     
-    await review.save();
+    await review.save({ session });
     
     // Update service average rating
     const allServiceReviews = await Review.find({ 
       service: serviceId,
       status: 'approved'
-    });
+    }).session(session);
     
     const totalRatings = allServiceReviews.reduce((sum, review) => sum + review.rating, 0);
     const avgRating = totalRatings / allServiceReviews.length;
@@ -75,20 +84,47 @@ export const createReview = async (req, res) => {
     await Service.findByIdAndUpdate(serviceId, {
       averageRating: avgRating.toFixed(1),
       reviewCount: allServiceReviews.length
-    });
+    }, { session });
+
+    await session.commitTransaction();
     
     res.status(201).json({
+      success: true,
       message: 'Review submitted successfully',
       review
     });
   } catch (error) {
-    console.error('Error creating review:', error);
-    res.status(500).json({ message: error.message });
+    await session.abortTransaction();
+    console.error('Review creation error:', error);
+    
+    // Check for specific error types
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: Object.values(error.errors).map(err => err.message)
+      });
+    }
+    
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: 'You have already reviewed this service'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  } finally {
+    session.endSession();
   }
-};
+});
 
 // Get reviews for a service
-export const getServiceReviews = async (req, res) => {
+export const getServiceReviews = asyncHandler(async (req, res) => {
   try {
     const { serviceId } = req.params;
     const { limit = 10, page = 1, sort = 'newest' } = req.query;
@@ -152,10 +188,10 @@ export const getServiceReviews = async (req, res) => {
     console.error('Error fetching service reviews:', error);
     res.status(500).json({ message: error.message });
   }
-};
+});
 
 // Get reviews by a client
-export const getClientReviews = async (req, res) => {
+export const getClientReviews = asyncHandler(async (req, res) => {
   try {
     const reviews = await Review.find({ client: req.user.id })
       .populate('service', 'title imageUrl')
@@ -167,10 +203,10 @@ export const getClientReviews = async (req, res) => {
     console.error('Error fetching client reviews:', error);
     res.status(500).json({ message: error.message });
   }
-};
+});
 
 // Get reviews for a provider
-export const getProviderReviews = async (req, res) => {
+export const getProviderReviews = asyncHandler(async (req, res) => {
   try {
     const reviews = await Review.find({ provider: req.user.id })
       .populate('service', 'title imageUrl')
@@ -182,10 +218,10 @@ export const getProviderReviews = async (req, res) => {
     console.error('Error fetching provider reviews:', error);
     res.status(500).json({ message: error.message });
   }
-};
+});
 
 // Update review (client can update their own review)
-export const updateReview = async (req, res) => {
+export const updateReview = asyncHandler(async (req, res) => {
   try {
     const { reviewId } = req.params;
     const { rating, comment } = req.body;
@@ -246,10 +282,10 @@ export const updateReview = async (req, res) => {
     console.error('Error updating review:', error);
     res.status(500).json({ message: error.message });
   }
-};
+});
 
 // Provider response to a review
-export const respondToReview = async (req, res) => {
+export const respondToReview = asyncHandler(async (req, res) => {
   try {
     const { reviewId } = req.params;
     const { response } = req.body;
@@ -282,10 +318,10 @@ export const respondToReview = async (req, res) => {
     console.error('Error adding response to review:', error);
     res.status(500).json({ message: error.message });
   }
-};
+});
 
 // Mark review as helpful (for clients)
-export const markReviewHelpful = async (req, res) => {
+export const markReviewHelpful = asyncHandler(async (req, res) => {
   try {
     const { reviewId } = req.params;
     
@@ -307,10 +343,10 @@ export const markReviewHelpful = async (req, res) => {
     console.error('Error marking review as helpful:', error);
     res.status(500).json({ message: error.message });
   }
-};
+});
 
 // Report a review (for inappropriate content)
-export const reportReview = async (req, res) => {
+export const reportReview = asyncHandler(async (req, res) => {
   try {
     const { reviewId } = req.params;
     const { reason } = req.body;
@@ -344,4 +380,4 @@ export const reportReview = async (req, res) => {
     console.error('Error reporting review:', error);
     res.status(500).json({ message: error.message });
   }
-};
+});
