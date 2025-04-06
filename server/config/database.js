@@ -1,31 +1,23 @@
 import mongoose from 'mongoose';
 
-let cachedConnection = null;
-
 export const connectDB = async () => {
-  if (cachedConnection) {
-    return cachedConnection;
-  }
-
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      maxPoolSize: 10
+      useNewUrlParser: true,
+      useUnifiedTopology: true
     });
-
-    cachedConnection = conn;
-    console.log('MongoDB connected successfully');
-    return conn;
+    console.log(`MongoDB connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw error;
+    console.error('MongoDB connection error:', error.message);
+    process.exit(1); // Exit process with failure
   }
 };
 
 export const disconnectDB = async () => {
-  if (cachedConnection) {
-    await mongoose.disconnect();
-    cachedConnection = null;
+  try {
+    await mongoose.connection.close();
+    console.log('MongoDB connection closed');
+  } catch (error) {
+    console.error('Error closing MongoDB connection:', error.message);
   }
 };
