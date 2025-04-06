@@ -17,22 +17,20 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 // Import routes with proper default exports
-import authRouter from './routes/auth.js';
-import serviceRoutes from './routes/provider/service.routes.js';
-import requestRoutes from './routes/request.routes.js';
-import reviewRoutes from './routes/review.routes.js';
-import categoryRoutes from './routes/category.routes.js';
-import bookingRoutes from './routes/booking.routes.js';
-import paymentRoutes from './routes/payment.routes.js';
-import adminRoutes from './routes/admin/admin.routes.js';
-import providerRoutes from './routes/provider/provider.routes.js';
-import profileRoutes from './routes/profile/profile.routes.js'; // Updated import
-import clientServiceRoutes from './routes/client/service.routes.js';  // Add this import
-import * as authModuleAgain from './routes/auth.js';
-import userRouter from './routes/client/user.routes.js'; // Add this import
-
-// Import admin routes
-import adminCategoryRoutes from './routes/admin/category.routes.js';
+// import authRouter from './routes/auth.js';
+// import serviceRoutes from './routes/provider/service.routes.js';
+// import requestRoutes from './routes/request.routes.js';
+// import reviewRoutes from './routes/review.routes.js';
+// import categoryRoutes from './routes/category.routes.js';
+// import bookingRoutes from './routes/booking.routes.js';
+// import paymentRoutes from './routes/payment.routes.js';
+// import adminRoutes from './routes/admin/admin.routes.js';
+// import providerRoutes from './routes/provider/provider.routes.js';
+// import profileRoutes from './routes/profile/profile.routes.js'; // Updated import
+// import clientServiceRoutes from './routes/client/service.routes.js';  // Add this import
+// import * as authModuleAgain from './routes/auth.js';
+// import userRouter from './routes/client/user.routes.js'; // Add this import
+// import adminCategoryRoutes from './routes/admin/category.routes.js';
 
 const app = express();
 
@@ -141,50 +139,34 @@ const initializeServer = async () => {
       next();
     });
 
-    // Mount admin routes first
-    app.use('/api/admin/categories', adminCategoryRoutes);  // Mount at /api/admin/categories
+    // app.use('/api/admin/categories', adminCategoryRoutes);  // Mount at /api/admin/categories
+    // app.use('/api/provider', providerRoutes);
+    // app.use('/api/services', clientServiceRoutes);
+    // app.use('/api/categories', categoryRoutes);
+    // app.use('/api/auth', authRouter);
+    // app.use('/api/auth', authModuleAgain.default || authModuleAgain.router || authModuleAgain);
+    // app.use('/api/client', clientRoutes); // Ensure correct mounting
+    // app.use('/api/provider/bookings', bookingRoutes);  // Mount provider bookings
+    // app.use('/api/provider/services', serviceRoutes);
+    // app.use('/api/provider', providerRoutes);
+    // app.use('/api/requests', requestRoutes); // Make sure the requests route is properly mounted
+    // app.use('/api/reviews', reviewRoutes);
+    // app.use('/api/bookings', bookingRoutes);
+    // app.use('/api/payments', paymentRoutes);
+    // app.use('/api/client', clientRoutes); // Keep only one mount point for client routes
+    // app.use('/api/profiles', profileRoutes);
+    // app.use('/api/users', userRouter);  // Mount user routes
+    // app.use('/api/provider', providerRoutes); // Keep provider routes after profiles
+    // app.use('/api/admin', adminRoutes);
+    // app.use('/api/provider/services', serviceRoutes);  // Change this line
+    // app.use('/api/provider', providerRoutes);
+    // app.use('/api/bookings', bookingRoutes);  // This is the correct mounting point
+    // app.use('/api/payments', paymentRoutes);
+    // app.use('/api/client', clientRoutes);
+    // app.use('/api/provider', providerRoutes);
+    // app.use('/api/client', clientRoutes);
+    // app.use('/api/provider', providerRoutes);
 
-    // Mount provider routes explicitly 
-    app.use('/api/provider', providerRoutes);
-
-
-    // Public routes - ensure they all start with /api
-    app.use('/api/services', clientServiceRoutes);
-    app.use('/api/categories', categoryRoutes);
-    app.use('/api/auth', authRouter);
-    app.use('/api/auth', authModuleAgain.default || authModuleAgain.router || authModuleAgain);
-    app.use('/api/client', clientRoutes); // Ensure correct mounting
-
-    // Protected routes
-    app.use('/api/provider/bookings', bookingRoutes);  // Mount provider bookings
-    app.use('/api/provider/services', serviceRoutes);
-    app.use('/api/provider', providerRoutes);
-    
-    app.use('/api/requests', requestRoutes); // Make sure the requests route is properly mounted
-
-    app.use('/api/reviews', reviewRoutes);
-    app.use('/api/bookings', bookingRoutes);
-    app.use('/api/payments', paymentRoutes);
-    app.use('/api/client', clientRoutes); // Keep only one mount point for client routes
-
-    // Mount profile routes in the correct order
-    app.use('/api/profiles', profileRoutes);
-    app.use('/api/users', userRouter);  // Mount user routes
-    app.use('/api/provider', providerRoutes); // Keep provider routes after profiles
-
-    // Mount admin routes with proper prefix
-    app.use('/api/admin', adminRoutes);
-
-    // Update provider routes mounting
-    app.use('/api/provider/services', serviceRoutes);  // Change this line
-    app.use('/api/provider', providerRoutes);
-
-    // Fix the booking routes to prevent duplicate controller issues
-    app.use('/api/bookings', bookingRoutes);  // This is the correct mounting point
-
-
-    app.use('/api/payments', paymentRoutes);
-    // Move this before your error handling middleware
     app.use((req, res, next) => {
       console.log(`${req.method} ${req.path}`, {
         body: !!req.body,
@@ -194,9 +176,6 @@ const initializeServer = async () => {
       next();
     });
 
-    // Update route mounting
-    app.use('/api/client', clientRoutes);
-    app.use('/api/provider', providerRoutes);
 
 
     // Move this before your error handling middleware
@@ -209,9 +188,7 @@ const initializeServer = async () => {
       next();
     });
 
-    // Update route mounting
-    app.use('/api/client', clientRoutes);
-    app.use('/api/provider', providerRoutes);
+
 
 
     // Global error handler - improve to log more details
