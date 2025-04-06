@@ -8,26 +8,27 @@ if (!cached) {
 
 const connectDB = async () => {
   if (cached.conn) {
-    console.log("✅ Using existing MongoDB connection");
+    console.log("✅ Using cached MongoDB connection");
     return cached.conn;
   }
 
   if (!process.env.MONGODB_URI) {
-    throw new Error('Please define MONGODB_URI in environment variables');
+    throw new Error('MONGODB_URI not found in environment variables');
   }
 
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: process.env.VERCEL ? 5 : 10,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
-      family: 4
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     };
 
     cached.promise = mongoose.connect(process.env.MONGODB_URI, opts)
       .then(mongoose => {
-        console.log('🟢 DB connected');
+        console.log('🟢 MongoDB connected');
         return mongoose;
       })
       .catch(err => {
@@ -46,13 +47,21 @@ const connectDB = async () => {
   }
 };
 
-// Add disconnect function
-const disconnectDB = async () => {
-  if (cached.conn) {
-    await mongoose.disconnect();
-    cached.conn = null;
-    cached.promise = null;
-  }
-};
+// Add connection event handlers
+mongoose.connection.on('connected', () => {
+  console.log('MongoDB connected');
+});
 
-export { connectDB, disconnectDB };
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+  cached.conn = null;
+  cached.promise = null;
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected');
+  cached.conn = null;
+  cached.promise = null;
+});
+
+export { connectDB };
