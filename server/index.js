@@ -85,13 +85,16 @@ const initializeServer = async () => {
 
     app.use(cors({
       origin: function(origin, callback) {
-        if (!origin) return callback(null, true);
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin || process.env.NODE_ENV === 'development') {
+          return callback(null, true);
+        }
         
         if (allowedOrigins.indexOf(origin) !== -1) {
           callback(null, true);
         } else {
-          console.log("Blocked origin:", origin);
-          callback(null, true); // Still allow in development mode
+          console.warn("Blocked origin:", origin);
+          callback(new Error('Not allowed by CORS'));
         }
       },
       credentials: true,
@@ -249,6 +252,10 @@ const initializeServer = async () => {
     });
 
     // Update server startup for Vercel
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
     
   } catch (error) {
     console.error('Server initialization failed:', error);
