@@ -5,7 +5,7 @@ import {
   changePassword
 } from '../../controllers/user.controller.js';
 import { authenticateUser } from '../../middleware/auth.middleware.js';
-import { uploadDocs } from '../../middleware/upload.middleware.js';
+
 
 const router = express.Router();
 

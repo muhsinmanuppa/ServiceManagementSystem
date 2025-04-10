@@ -22,6 +22,10 @@ const EditService = () => {
   });
   const [imagePreview, setImagePreview] = useState('');
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,46 +80,77 @@ const EditService = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const data = new FormData();
-      data.append('id', id);
-      
-      // Only append changed fields
-      Object.keys(formData).forEach(key => {
-        if (key === 'image' && formData[key]) {
-          data.append('serviceImage', formData[key]);
-        } else if (key !== 'existingImage' && formData[key]) {
-          data.append(key, formData[key]);
-        }
-      });
-
-      const response = await api.put(`/provider/services/${id}`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      if (response.data.success) {
-        dispatch(showNotification({
-          type: 'success',
-          message: 'Service updated successfully'
-        }));
-        navigate('/provider/services');
-      }
-    } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Error updating service';
+    
+    const { isValid, errors } = validateService(formData);
+    
+    if (!isValid) {
+      setFormErrors(errors);
       dispatch(showNotification({
         type: 'error',
-        message: errorMsg
+        message: Object.values(errors)[0]
       }));
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      const serviceFormData = new FormData();
+      serviceFormData.append('title', formData.title.trim());
+      serviceFormData.append('description', formData.description.trim());
+      serviceFormData.append('price', parseFloat(formData.price));
+      if (formData.category) {
+        serviceFormData.append('category', formData.category);
+      }
+      
+      // Only append image if a new one is selected
+      if (selectedFile) {
+        serviceFormData.append('serviceImage', selectedFile);
+      }
+
+      await dispatch(updateService({ id, serviceData: serviceFormData })).unwrap();
+      
+      dispatch(showNotification({
+        message: 'Service updated successfully',
+        type: 'success'
+      }));
+      
+      navigate('/provider/services');
+    } catch (error) {
+      console.error('Update error:', error);
+      dispatch(showNotification({
+        message: error.message || 'Error updating service. Please check file size and type.',
+        type: 'error'
+      }));
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'image' && files[0]) {
-      setFormData(prev => ({ ...prev, [name]: files[0] }));
-      setImagePreview(URL.createObjectURL(files[0]));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+      if (!validTypes.includes(file.type)) {
+        setFormErrors({...formErrors, image: 'Please upload a valid image file (JPEG, PNG, or GIF)'});
+        return;
+      }
+      
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setFormErrors({...formErrors, image: 'Image size should be less than 5MB'});
+        return;
+      }
+
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setFormErrors({...formErrors, image: null});
     }
   };
 
@@ -185,10 +220,10 @@ const EditService = () => {
 
             <Form.Group className="mb-3">
               <Form.Label>Service Image</Form.Label>
-              {imagePreview && (
+              {previewUrl && (
                 <div className="mb-2">
                   <img
-                    src={imagePreview}
+                    src={previewUrl}
                     alt="Service preview"
                     className="img-thumbnail"
                     style={{ maxHeight: '200px' }}
@@ -198,14 +233,15 @@ const EditService = () => {
               <Form.Control
                 type="file"
                 name="image"
-                onChange={handleChange}
+                onChange={handleFileChange}
                 accept="image/*"
               />
+              {formErrors.image && <div className="text-danger">{formErrors.image}</div>}
             </Form.Group>
 
             <div className="d-flex gap-2">
-              <Button variant="primary" type="submit">
-                Update Service
+              <Button variant="primary" type="submit" disabled={uploading}>
+                {uploading ? 'Updating...' : 'Update Service'}
               </Button>
               <Button 
                 variant="outline-secondary" 

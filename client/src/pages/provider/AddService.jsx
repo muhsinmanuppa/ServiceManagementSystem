@@ -50,13 +50,17 @@ const AddService = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+      if (!validTypes.includes(file.type)) {
+        setFormErrors({...formErrors, image: 'Please upload a valid image file (JPEG, PNG, or GIF)'});
+        return;
+      }
+      
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
-      
-      // Clear image error if exists
-      if (formErrors.image) {
-        setFormErrors({ ...formErrors, image: null });
-      }
+      // Clear any existing image errors
+      setFormErrors({...formErrors, image: null});
     }
   };
 
@@ -66,17 +70,22 @@ const AddService = () => {
     const { isValid, errors } = validateService(formData);
     
     if (!isValid) {
-      const errorMessage = Object.values(errors)[0]; // Get first error
+      setFormErrors(errors);
       dispatch(showNotification({
         type: 'error',
-        message: errorMessage
+        message: Object.values(errors)[0]
       }));
       return;
     }
 
     if (!selectedFile) {
-      errors.image = 'Please select an image for your service';
-      setFormErrors(errors);
+      setFormErrors({...formErrors, image: 'Please select an image for your service'});
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      setFormErrors({...formErrors, image: 'Image size should be less than 5MB'});
       return;
     }
 
@@ -84,16 +93,18 @@ const AddService = () => {
     
     try {
       const serviceFormData = new FormData();
+      // Ensure all form fields are trimmed and properly formatted
       serviceFormData.append('title', formData.title.trim());
       serviceFormData.append('description', formData.description.trim());
-      serviceFormData.append('price', formData.price);
+      serviceFormData.append('price', parseFloat(formData.price));
       if (formData.category) {
         serviceFormData.append('category', formData.category);
       }
-      // Change field name to match backend expectation
-      serviceFormData.append('serviceImage', selectedFile);
       
-      await dispatch(createService(serviceFormData)).unwrap();
+      // Important: Match the field name expected by multer
+      serviceFormData.append('serviceImage', selectedFile);
+
+      const response = await dispatch(createService(serviceFormData)).unwrap();
       
       dispatch(showNotification({
         message: 'Service created successfully',
@@ -102,10 +113,11 @@ const AddService = () => {
       
       navigate('/provider/services');
     } catch (error) {
-      dispatch.showNotification({
-        message: error.message || 'Error creating service',
+      console.error('Upload error:', error);
+      dispatch(showNotification({
+        message: error.message || 'Error creating service. Please check file size and type.',
         type: 'error'
-      });
+      }));
     } finally {
       setUploading(false);
     }
