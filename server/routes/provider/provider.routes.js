@@ -21,8 +21,6 @@ import {
   getProviderServices,
   getServiceById
 } from '../../controllers/provider/service.controller.js';
-import { upload } from '../../middleware/multer.middleware.js';
-import { getProfile } from '../../controllers/profile.controller.js';
 import { getProviderBookings, getBookingById, updateBookingStatus, submitQuote } from '../../controllers/booking.controller.js';
 
 const router = express.Router();
@@ -56,8 +54,8 @@ router.get('/services/:id', async (req, res, next) => {
   }
 });
 router.get('/services', getProviderServices);
-router.post('/services', upload.single('serviceImage'), createService);
-router.put('/services/:id', upload.single('serviceImage'), updateService);
+router.post('/services', uploadDocs.single('serviceImage'), handleUploadError, createService);
+router.put('/services/:id', uploadDocs.single('serviceImage'), handleUploadError, updateService);
 router.delete('/services/:id', deleteService);
 
 // Profile routes

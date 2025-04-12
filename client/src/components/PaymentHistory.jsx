@@ -66,7 +66,7 @@ const PaymentHistory = () => {
                   <tr key={service._id || Math.random().toString()}>
                     <td>{new Date(service.createdAt).toLocaleDateString()}</td>
                     <td>{service.service || 'N/A'}</td>
-                    <td>₹{(service.amount / 100).toFixed(2)}</td>
+                    <td>₹{service.amount?.toFixed(2) || '0.00'}</td>
                     <td>
                       <span className={`badge bg-${service.paymentStatus === 'paid' ? 'success' : 'warning'}`}>
                         {service.paymentStatus}

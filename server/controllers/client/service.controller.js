@@ -2,7 +2,23 @@ import Service from '../../models/Service.js';
 
 export const getAllServices = async (req, res) => {
     try {
-        const services = await Service.find({ status: 'active' })
+        // Build filter object based on query parameters
+        const filter = { status: 'active' };
+        
+        // Add category filter if provided
+        if (req.query.category && req.query.category !== '') {
+            filter.category = req.query.category;
+        }
+        
+        // Add search filter if provided
+        if (req.query.search && req.query.search !== '') {
+            filter.$or = [
+                { title: { $regex: req.query.search, $options: 'i' } },
+                { description: { $regex: req.query.search, $options: 'i' } }
+            ];
+        }
+
+        const services = await Service.find(filter)
             .populate('category', 'name')
             .populate('provider', 'name email rating')
             .sort('-createdAt');

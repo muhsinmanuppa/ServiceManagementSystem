@@ -14,22 +14,23 @@ const ClientLayout = () => {
     { to: '/client/dashboard', text: 'Dashboard', icon: 'dashboard' },
     { to: '/client/services', text: 'Services', icon: 'concierge-bell' },
     { to: '/client/bookings', text: 'My Bookings', icon: 'calendar-check' },
-    // Favorites link removed
     { to: '/client/profile', text: 'Profile', icon: 'user' }
   ];
 
   return (
-    <div className="d-flex">
-      <Sidebar
-        navItems={navItems}
-        collapsed={sidebarCollapsed}
-      />
-      <div className="content-wrapper">
+    <div className="d-flex h-100">
+      <div className="sidebar-container" style={{ minWidth: sidebarCollapsed ? '64px' : '280px', width: sidebarCollapsed ? '64px' : '280px' }}>
+        <Sidebar
+          navItems={navItems}
+          collapsed={sidebarCollapsed}
+        />
+      </div>
+      <div className="content-wrapper flex-grow-1 overflow-hidden">
         <Header
           toggleSidebar={toggleSidebar}
           sidebarCollapsed={sidebarCollapsed}
         />
-        <main className="content">
+        <main className="content overflow-auto p-4">
           <Outlet />
         </main>
       </div>

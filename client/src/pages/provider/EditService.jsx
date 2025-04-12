@@ -18,7 +18,8 @@ const EditService = () => {
     description: '',
     price: '',
     category: '',
-    image: null
+    image: null,
+    existingImage: ''
   });
   const [imagePreview, setImagePreview] = useState('');
   const [error, setError] = useState(null);
@@ -78,6 +79,62 @@ const EditService = () => {
     }
   }, [id, dispatch]);
 
+  const validateService = (data) => {
+    const errors = {};
+    let isValid = true;
+
+    if (!data.title || data.title.trim() === '') {
+      errors.title = 'Title is required';
+      isValid = false;
+    }
+
+    if (!data.description || data.description.trim() === '') {
+      errors.description = 'Description is required';
+      isValid = false;
+    }
+
+    if (!data.price || isNaN(parseFloat(data.price)) || parseFloat(data.price) < 0) {
+      errors.price = 'Valid price is required';
+      isValid = false;
+    }
+
+    if (!data.category) {
+      errors.category = 'Category is required';
+      isValid = false;
+    }
+
+    return { isValid, errors };
+  };
+
+  const updateService = async ({ id, serviceData }) => {
+    try {
+      // Create full service data with image
+      const updateData = new FormData();
+      updateData.append('title', serviceData.get('title'));
+      updateData.append('description', serviceData.get('description'));
+      updateData.append('price', serviceData.get('price'));
+      updateData.append('category', serviceData.get('category'));
+      
+      // If there's a new file, append it
+      if (selectedFile) {
+        updateData.append('serviceImage', selectedFile);
+      } else if (formData.existingImage) {
+        // Keep existing image
+        updateData.append('imageUrl', formData.existingImage);
+      }
+
+      const response = await api.put(`/provider/services/${id}`, updateData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Service update error:', error);
+      throw new Error(error.response?.data?.message || 'Failed to update service');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -99,16 +156,9 @@ const EditService = () => {
       serviceFormData.append('title', formData.title.trim());
       serviceFormData.append('description', formData.description.trim());
       serviceFormData.append('price', parseFloat(formData.price));
-      if (formData.category) {
-        serviceFormData.append('category', formData.category);
-      }
-      
-      // Only append image if a new one is selected
-      if (selectedFile) {
-        serviceFormData.append('serviceImage', selectedFile);
-      }
+      serviceFormData.append('category', formData.category);
 
-      await dispatch(updateService({ id, serviceData: serviceFormData })).unwrap();
+      await updateService({ id, serviceData: serviceFormData });
       
       dispatch(showNotification({
         message: 'Service updated successfully',
@@ -117,9 +167,8 @@ const EditService = () => {
       
       navigate('/provider/services');
     } catch (error) {
-      console.error('Update error:', error);
       dispatch(showNotification({
-        message: error.message || 'Error updating service. Please check file size and type.',
+        message: error.message || 'Error updating service. Please try again.',
         type: 'error'
       }));
     } finally {
@@ -173,7 +222,13 @@ const EditService = () => {
                 value={formData.title}
                 onChange={handleChange}
                 required
+                isInvalid={!!formErrors.title}
               />
+              {formErrors.title && (
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.title}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -185,7 +240,13 @@ const EditService = () => {
                 onChange={handleChange}
                 required
                 rows={3}
+                isInvalid={!!formErrors.description}
               />
+              {formErrors.description && (
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.description}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -198,7 +259,13 @@ const EditService = () => {
                 required
                 min="0"
                 step="0.01"
+                isInvalid={!!formErrors.price}
               />
+              {formErrors.price && (
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.price}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -208,6 +275,7 @@ const EditService = () => {
                 value={formData.category}
                 onChange={handleChange}
                 required
+                isInvalid={!!formErrors.category}
               >
                 <option value="">Select Category</option>
                 {categories.map(category => (
@@ -216,14 +284,19 @@ const EditService = () => {
                   </option>
                 ))}
               </Form.Select>
+              {formErrors.category && (
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.category}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Service Image</Form.Label>
-              {previewUrl && (
+              {(previewUrl || imagePreview) && (
                 <div className="mb-2">
                   <img
-                    src={previewUrl}
+                    src={previewUrl || imagePreview}
                     alt="Service preview"
                     className="img-thumbnail"
                     style={{ maxHeight: '200px' }}
@@ -235,8 +308,13 @@ const EditService = () => {
                 name="image"
                 onChange={handleFileChange}
                 accept="image/*"
+                isInvalid={!!formErrors.image}
               />
-              {formErrors.image && <div className="text-danger">{formErrors.image}</div>}
+              {formErrors.image && (
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.image}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <div className="d-flex gap-2">

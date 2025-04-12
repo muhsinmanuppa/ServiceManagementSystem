@@ -302,75 +302,36 @@ export const updateServiceStatus = async (req, res) => {
 // Get all services (with filtering options)
 export const getAllServices = async (req, res) => {
   try {
-    const { 
-      category, 
-      status = 'active',
-      minPrice, 
-      maxPrice, 
-      search, 
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-      limit = 20,
-      page = 1
-    } = req.query;
+    const { search, category } = req.query;
+    console.log('Received query params:', { search, category });
 
-    // Build filter object
-    const filter = {};
+    const filter = { status: 'active' };
 
-    // Add status filter if user is not admin
-    if (req.user?.role !== 'admin') {
-      filter.status = 'active'; // Regular users can only see active services
-    } else if (status !== 'all') {
-      filter.status = status; // Admin can filter by status
-    }
-
-    if (category) {
-      filter.category = category;
-    }
-
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = Number(minPrice);
-      if (maxPrice) filter.price.$lte = Number(maxPrice);
-    }
-
-    if (search) {
+    // Add search filter
+    if (search && search.trim()) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } }
       ];
     }
 
-    // Calculate pagination
-    const skip = (page - 1) * limit;
+    // Add category filter
+    if (category && category !== 'all') {
+      filter.category = new mongoose.Types.ObjectId(category);
+    }
 
-    // Sort options
-    const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    console.log('Using filter:', filter);
 
-    // Get services with pagination
     const services = await Service.find(filter)
-      .populate('provider', 'name email')
       .populate('category', 'name')
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(Number(limit));
+      .populate('provider', 'name email')
+      .sort('-createdAt');
 
-    // Get total count for pagination
-    const totalServices = await Service.countDocuments(filter);
+    res.json({ services });
 
-    res.json({
-      services,
-      pagination: {
-        totalServices,
-        totalPages: Math.ceil(totalServices / limit),
-        currentPage: page,
-        limit
-      }
-    });
   } catch (error) {
-    console.error('Error fetching services:', error);
-    res.status(500).json({ message: error.message });
+    console.error('Search error:', error);
+    res.status(500).json({ message: 'Error searching services' });
   }
 };
 
@@ -416,22 +377,16 @@ export const getFeaturedServices = async (req, res) => {
   }
 };
 
+// Simple search services method
 export const searchServices = async (req, res) => {
   try {
-    const { 
-      query, 
-      category, 
-      minPrice, 
-      maxPrice, 
-      rating,
-      location,
-      distance,
-      availability 
-    } = req.query;
+    const { query = '', category = '' } = req.query;
     
+    console.log('Search params:', { query, category });
+
     const filter = { status: 'active' };
-    
-    // Text search
+
+    // Simple search
     if (query) {
       filter.$or = [
         { title: { $regex: query, $options: 'i' } },
@@ -439,59 +394,31 @@ export const searchServices = async (req, res) => {
       ];
     }
 
-    // Category filter
-    if (category) {
-      filter.category = category;
-    }
-
-    // Price range filter
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = Number(minPrice);
-      if (maxPrice) filter.price.$lte = Number(maxPrice);
-    }
-
-    // Rating filter
-    if (rating) {
-      filter.averageRating = { $gte: Number(rating) };
-    }
-
-    // Location-based search
-    if (location && distance) {
-      const [lng, lat] = location.split(',').map(Number);
-      filter.location = {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: [lng, lat]
-          },
-          $maxDistance: Number(distance) * 1000 // Convert km to meters
-        }
-      };
-    }
-
-    // Availability filter
-    if (availability) {
-      const date = new Date(availability);
-      filter['availability.customDates'] = {
-        $not: {
-          $elemMatch: {
-            date: date,
-            isHoliday: true
-          }
-        }
-      };
+    // Simple category filter
+    if (category && mongoose.Types.ObjectId.isValid(category)) {
+      filter.category = new mongoose.Types.ObjectId(category);
     }
 
     const services = await Service.find(filter)
-      .populate('provider', 'name verificationStatus ratings')
       .populate('category', 'name')
-      .sort('-averageRating');
+      .populate('provider', 'name email')
+      .sort('-createdAt')
+      .lean();
 
-    res.json({ services });
-  } catch (error) {
-    console.error('Service search error:', error);
-    res.status(500).json({ message: 'Error searching services' });
+    console.log(`Found ${services.length} services`);
+    
+    return res.status(200).json({
+      success: true,
+      services
+    });
+
+  } catch (err) {
+    console.error('Search error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Error searching services',
+      error: err.message
+    });
   }
 };
 

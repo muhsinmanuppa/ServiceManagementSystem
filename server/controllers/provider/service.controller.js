@@ -35,6 +35,7 @@ export const createService = async (req, res) => {
 
 export const getProviderServices = async (req, res) => {
   try {
+    //console.log('Fetching services for provider:', req.user._id);
     const services = await Service.find({ provider: req.user._id })
       .populate('category', 'name')
       .sort('-createdAt');

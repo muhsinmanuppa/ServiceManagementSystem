@@ -29,7 +29,6 @@ console.log('- CLIENT_URL:', process.env.CLIENT_URL);
 // Import routes with proper default exports
 import authRouter from './routes/auth.js';
 import serviceRoutes from './routes/provider/service.routes.js';
-import requestRoutes from './routes/request.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import bookingRoutes from './routes/booking.routes.js';
@@ -180,8 +179,6 @@ const initializeServer = async () => {
     app.use('/api/provider/services', serviceRoutes);
     app.use('/api/provider', providerRoutes);
     
-    app.use('/api/requests', requestRoutes); // Make sure the requests route is properly mounted
-
     app.use('/api/reviews', reviewRoutes);
     app.use('/api/bookings', bookingRoutes);
     app.use('/api/payments', paymentRoutes);

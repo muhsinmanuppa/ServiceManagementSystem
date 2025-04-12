@@ -236,7 +236,7 @@ const Profile = () => {
           <ul className="nav nav-tabs mb-4">
             <li className="nav-item">
               <button 
-                class={`nav-link ${activeTab === 'basic' ? 'active' : ''}`}
+                className={`nav-link ${activeTab === 'basic' ? 'active' : ''}`}
                 onClick={() => setActiveTab('basic')}
               >
                 Basic Information
@@ -244,7 +244,7 @@ const Profile = () => {
             </li>
             <li className="nav-item">
               <button 
-                class={`nav-link ${activeTab === 'security' ? 'active' : ''}`}
+                className={`nav-link ${activeTab === 'security' ? 'active' : ''}`}
                 onClick={() => setActiveTab('security')}
               >
                 Security

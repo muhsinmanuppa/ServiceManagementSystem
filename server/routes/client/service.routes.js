@@ -11,7 +11,7 @@ import { authenticateUser, authorizeRoles } from '../../middleware/auth.middlewa
 
 const router = express.Router();
 
-// Public routes - no authentication required
+// Public routes
 router.get('/', getAllServices);
 router.get('/featured', getFeaturedServices);
 router.get('/search', searchServices);
