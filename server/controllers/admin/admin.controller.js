@@ -140,13 +140,15 @@ export const getAllProviders = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    console.log('Fetching Users with query:', req.query);
     const { status, search, verificationStatus } = req.query;
 
-    const filter = { role: { $in: ['provider', 'client'] } };
+    const filter = {
+      role: { $regex: '^(provider|client)$', $options: 'i' }
+    };
 
     if (status) filter.status = status;
     if (verificationStatus) filter['verificationStatus.status'] = verificationStatus;
+
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -154,29 +156,16 @@ export const getAllUsers = async (req, res) => {
       ];
     }
 
-    console.log('Final filter:', filter);
-
     const users = await User.find(filter)
       .select('name email description verificationStatus document createdAt status role')
       .sort({ createdAt: -1 });
 
-    console.log(`Found ${users.length} users`);
-
-    res.json({ 
-      success: true, 
-      users,
-      query: req.query,
-      filter
-    });
+    res.json({ success: true, users });
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Failed to fetch users',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 
 export const updateProviderStatus = async (req, res) => {

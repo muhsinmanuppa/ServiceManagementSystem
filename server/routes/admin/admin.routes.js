@@ -17,7 +17,7 @@ const router = express.Router();
 router.use(authenticateUser);
 router.use(authorizeRoles('admin'));
 
-// Fix provider routes
+// provider routes
 router.get('/providers/list', getAllUsers);
 router.get('/providers/stats', getProviderStats);
 router.get('/providers/:providerId', getProviderDetails);
