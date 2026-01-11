@@ -11,6 +11,7 @@ export const getPendingVerifications = async (req, res) => {
     }).select('name email description document verificationStatus createdAt bio businessName phone address experience');
 
     res.json({ success: true, providers });
+    
   } catch (error) {
     console.error('Error fetching verifications:', error);
     res.status(500).json({ message: 'Failed to fetch verifications' });

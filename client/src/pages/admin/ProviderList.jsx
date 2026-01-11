@@ -31,7 +31,8 @@ const UserList = () => {
 
       if (response.data.success) {
         console.log('Fetched users:', response.data.users);
-        setUsers(Array.isArray(response.data.users) ? response.data.users : []);
+        setUsers(Array.isArray(response.data.providers) ? response.data.providers : []);
+
 
       } else {
         throw new Error(response.data.message || 'Failed to fetch users');
