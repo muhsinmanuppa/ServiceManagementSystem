@@ -143,7 +143,7 @@ export const getAllUsers = async (req, res) => {
     const { status, search, verificationStatus } = req.query;
 
     const filter = {
-      role: { $ne: 'admin' }   // exclude all admins
+      role: { $ne: 'admin' }   
     };
 
     if (status) filter.status = status;
