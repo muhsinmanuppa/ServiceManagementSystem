@@ -143,11 +143,14 @@ export const getAllUsers = async (req, res) => {
     const { status, search, verificationStatus } = req.query;
 
     const filter = {
-      role: { $regex: '^(provider|client)$', $options: 'i' }
+      role: { $ne: 'admin' }   // exclude all admins
     };
 
     if (status) filter.status = status;
-    if (verificationStatus) filter['verificationStatus.status'] = verificationStatus;
+
+    if (verificationStatus) {
+      filter['verificationStatus.status'] = verificationStatus;
+    }
 
     if (search) {
       filter.$or = [
@@ -160,9 +163,20 @@ export const getAllUsers = async (req, res) => {
       .select('name email description verificationStatus document createdAt status role')
       .sort({ createdAt: -1 });
 
-    res.json({ success: true, users });
+    console.log("USERS FOUND:", users.length);
+
+    res.json({
+      success: true,
+      users
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Fetch users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message
+    });
   }
 };
 
