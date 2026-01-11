@@ -1,6 +1,4 @@
-/**
- * Utility for checking API server connectivity
- */
+
 import api, { checkServerConnection } from './api';
 
 const checkServerConnectivity = async () => {
@@ -8,7 +6,6 @@ const checkServerConnectivity = async () => {
     // Try to make a simple request to check if server is up
     const response = await api.get('/test/ping', { 
       timeout: 3000,
-      // Don't show error notification for this diagnostic request
       _suppressErrorNotification: true
     });
     
@@ -67,7 +64,6 @@ const displayServerStatus = () => {
       statusDiv.textContent = '✗ API Server Disconnected';
     }
     
-    // Remove after 5 seconds
     setTimeout(() => {
       statusDiv.style.opacity = '0';
       statusDiv.style.transition = 'opacity 0.5s';
@@ -76,13 +72,10 @@ const displayServerStatus = () => {
   });
 };
 
-// Only in development mode, check server status on page load
-// Safe environment check that avoids direct process reference
 if (typeof window !== 'undefined') {
-  // Check for development mode using import.meta when available
   const isDevelopment = 
     (typeof import.meta !== 'undefined' && import.meta.env?.MODE !== 'production') || 
-    (window.__DEVELOPMENT__ === true);  // Fallback to a global flag that your build system might set
+    (window.__DEVELOPMENT__ === true); 
     
   if (isDevelopment) {
     window.addEventListener('load', () => {

@@ -9,7 +9,7 @@ import AuthGuard from '../components/AuthGuard';
 const BookingRoutes = () => {
   return (
     <Routes>
-      {/* Client booking routes */}
+
       <Route 
         path="/client/bookings" 
         element={
@@ -18,7 +18,7 @@ const BookingRoutes = () => {
           </AuthGuard>
         } 
       />
-      {/* Update this route to match the link in ClientBookings */}
+
       <Route 
         path="/client/bookings/:id" 
         element={
@@ -28,7 +28,7 @@ const BookingRoutes = () => {
         } 
       />
 
-      {/* Provider booking routes */}
+
       <Route 
         path="provider/bookings" 
         element={
@@ -46,7 +46,7 @@ const BookingRoutes = () => {
         } 
       />
 
-      {/* Admin booking routes */}
+
       <Route 
         path="admin/bookings" 
         element={

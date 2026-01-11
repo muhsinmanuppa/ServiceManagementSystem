@@ -7,16 +7,14 @@ import { fileURLToPath } from 'url';
 import { connectDB } from './config/database.js';
 import http from 'http';
 import { initializeSocket } from './socket/socket.js';
-import { clientRoutes } from './routes/client/clientRoutes.js'; // Use ES module syntax
+import { clientRoutes } from './routes/client/clientRoutes.js'; 
 
-// Get directory path for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables from .env file (specify the path explicitly)
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-// Log essential configuration for debugging
+// debugging
 console.log('Environment check:');
 console.log('- PORT:', process.env.PORT);
 console.log('- MONGODB_URI:', process.env.MONGODB_URI ? 'Defined' : 'Undefined');
@@ -26,7 +24,7 @@ console.log('- SMTP_PORT:', process.env.SMTP_PORT);
 console.log('- SMTP_USER:', process.env.SMTP_USER ? 'Defined' : 'Undefined');
 console.log('- CLIENT_URL:', process.env.CLIENT_URL);
 
-// Import routes with proper default exports
+// routes
 import authRouter from './routes/auth.js';
 import serviceRoutes from './routes/provider/service.routes.js';
 import reviewRoutes from './routes/review.routes.js';
@@ -36,29 +34,25 @@ import paymentRoutes from './routes/payment.routes.js';
 import testRoutes from './routes/test.routes.js';
 import adminRoutes from './routes/admin/admin.routes.js';
 import providerRoutes from './routes/provider/provider.routes.js';
-import profileRoutes from './routes/profile/profile.routes.js'; // Updated import
-import clientServiceRoutes from './routes/client/service.routes.js';  // Add this import
+import profileRoutes from './routes/profile/profile.routes.js'; 
+import clientServiceRoutes from './routes/client/service.routes.js';  
 import * as authModuleAgain from './routes/auth.js';
-import userRouter from './routes/client/user.routes.js'; // Add this import
-
-// Import admin routes
+import userRouter from './routes/client/user.routes.js'; 
 import adminCategoryRoutes from './routes/admin/category.routes.js';
 
 const app = express();
 
-// Initialize server
 const initializeServer = async () => {
   try {
     await connectDB();
     
-    // Create HTTP server
     const server = http.createServer(app);
     
     // Initialize Socket.IO with the HTTP server and store the instance
     const socketIO = initializeSocket(server);
     console.log('Socket.IO initialized successfully');
 
-    // Add appropriate headers for Vercel deployment
+    
     app.use((req, res, next) => {
       res.header('Access-Control-Allow-Origin', process.env.CLIENT_URL);
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -84,7 +78,6 @@ const initializeServer = async () => {
 
     app.use(cors({
       origin: function(origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin || process.env.NODE_ENV === 'development') {
           return callback(null, true);
         }
@@ -118,11 +111,11 @@ const initializeServer = async () => {
       });
     });
 
-    // After public routes, setup middleware
+    // middleware
     app.use(express.json({ limit: '1mb' }));
     app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-    // Add request logging - ONLY ONCE
+    // request logging 
     app.use((req, res, next) => {
       console.log(`${req.method} ${req.url}`, {
         hasAuth: !!req.headers.authorization,
@@ -131,7 +124,7 @@ const initializeServer = async () => {
       next();
     });
 
-    // Middleware setup - add these before your routes
+    // Middleware
     app.use(express.json({
       limit: '1mb',
       verify: (req, res, buf) => {
@@ -146,7 +139,6 @@ const initializeServer = async () => {
 
     app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-    // Add request logging middleware
     app.use((req, res, next) => {
       console.log(`${req.method} ${req.url}`, req.body ? 'with body' : 'no body');
       next();
@@ -154,16 +146,13 @@ const initializeServer = async () => {
 
     app.use(express.json());
 
-    // Add error handling middleware before routes
+    // error handling
     app.use((req, res, next) => {
       req.setTimeout(30000); // 30 seconds timeout
       next();
     });
 
-    // Mount admin routes first
-    app.use('/api/admin/categories', adminCategoryRoutes);  // Mount at /api/admin/categories
-
-    // Mount provider routes explicitly 
+    app.use('/api/admin/categories', adminCategoryRoutes);
     app.use('/api/provider', providerRoutes);
 
 
@@ -172,10 +161,9 @@ const initializeServer = async () => {
     app.use('/api/categories', categoryRoutes);
     app.use('/api/auth', authRouter);
     app.use('/api/auth', authModuleAgain.default || authModuleAgain.router || authModuleAgain);
-    app.use('/api/client', clientRoutes); // Ensure correct mounting
+    app.use('/api/client', clientRoutes); 
 
-    // Protected routes
-    app.use('/api/provider/bookings', bookingRoutes);  // Mount provider bookings
+    app.use('/api/provider/bookings', bookingRoutes);  
     app.use('/api/provider/services', serviceRoutes);
     app.use('/api/provider', providerRoutes);
     
@@ -183,22 +171,18 @@ const initializeServer = async () => {
     app.use('/api/bookings', bookingRoutes);
     app.use('/api/payments', paymentRoutes);
     app.use('/api/test', testRoutes);
-    app.use('/api/client', clientRoutes); // Keep only one mount point for client routes
+    app.use('/api/client', clientRoutes); 
 
-    // Mount profile routes in the correct order
     app.use('/api/profiles', profileRoutes);
-    app.use('/api/users', userRouter);  // Mount user routes
-    app.use('/api/provider', providerRoutes); // Keep provider routes after profiles
+    app.use('/api/users', userRouter);  
+    app.use('/api/provider', providerRoutes); 
 
-    // Mount admin routes with proper prefix
     app.use('/api/admin', adminRoutes);
 
-    // Update provider routes mounting
-    app.use('/api/provider/services', serviceRoutes);  // Change this line
+    app.use('/api/provider/services', serviceRoutes);
     app.use('/api/provider', providerRoutes);
 
-    // Fix the booking routes to prevent duplicate controller issues
-    app.use('/api/bookings', bookingRoutes);  // This is the correct mounting point
+    app.use('/api/bookings', bookingRoutes);
 
 
     app.use('/api/payments', paymentRoutes);
@@ -206,7 +190,6 @@ const initializeServer = async () => {
     app.get('/', (req, res) => {
       res.send('API is running...');
     });
-    // Move this before your error handling middleware
     app.use((req, res, next) => {
       console.log(`${req.method} ${req.path}`, {
         body: !!req.body,
@@ -216,12 +199,11 @@ const initializeServer = async () => {
       next();
     });
 
-    // Update route mounting
     app.use('/api/client', clientRoutes);
     app.use('/api/provider', providerRoutes);
 
 
-    // Global error handler - improve to provide more details
+    // Global error handler
     app.use((err, req, res, next) => {
       console.error('Error:', {
         message: err.message,
@@ -248,7 +230,6 @@ const initializeServer = async () => {
       });
     });
 
-    // Update server startup for Vercel
     const PORT = process.env.PORT || 5000;
     server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

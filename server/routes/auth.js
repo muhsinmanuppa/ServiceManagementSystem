@@ -30,7 +30,7 @@ router.post('/resend-otp', resendOtp);
 router.post('/verify-otp', verifyOtp);
 router.post('/validate-token', validateToken);
 
-// Protected routes - require authentication
+// Protected routes
 router.use(authenticateUser);
 
 router.put('/change-password', changePassword);

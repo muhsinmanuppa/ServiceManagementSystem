@@ -106,7 +106,7 @@ const UserManager = () => {
                         )}
                         <button 
                           className="btn btn-info"
-                          onClick={() => {/* Add view details logic */}}
+                          onClick={() => {/* view details*/}}
                         >
                           View
                         </button>

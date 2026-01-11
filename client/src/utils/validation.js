@@ -6,11 +6,7 @@ export const validatePassword = (password) => {
   return password.length >= 6;
 };
 
-/**
- * Validates service form data
- * @param {Object} data - The service form data
- * @returns {Object} - Object containing validation errors
- */
+
 export const validateService = (data) => {
   const errors = {};
 
@@ -36,11 +32,7 @@ export const validateService = (data) => {
   };
 };
 
-/**
- * Validates user registration data
- * @param {Object} formData - The registration form data
- * @returns {Object} - Object containing validation errors
- */
+
 export const validateRegistration = (formData) => {
   const errors = {};
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -74,11 +66,7 @@ export const validateRegistration = (formData) => {
   return errors;
 };
 
-/**
- * Validates booking data
- * @param {Object} formData - The booking form data
- * @returns {Object} - Object containing validation errors
- */
+
 export const validateBooking = (formData) => {
   const errors = {};
   
@@ -100,11 +88,7 @@ export const validateBooking = (formData) => {
   return errors;
 };
 
-/**
- * Validates user profile data
- * @param {Object} formData - The profile form data
- * @returns {Object} - Object containing validation errors
- */
+
 export const validateProfile = (formData) => {
   const errors = {};
   const phoneRegex = /^[0-9+\- ]{8,15}$/;
@@ -120,11 +104,7 @@ export const validateProfile = (formData) => {
   return errors;
 };
 
-/**
- * Check if password is strong enough
- * @param {string} password - The password to check
- * @returns {Object} - Object containing strength assessment and suggestions
- */
+
 export const checkPasswordStrength = (password) => {
   if (!password) {
     return {

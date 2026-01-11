@@ -19,11 +19,17 @@ const ProviderVerification = () => {
   const fetchPendingVerifications = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/verifications'); // Updated endpoint
+      const response = await api.get('/admin/verifications');
       
       if (response.data.success) {
         setProviders(response.data.providers);
         console.log('Fetched providers:', response.data.providers);
+        if (response.data.providers.length > 0) {
+          console.log('First provider data:', response.data.providers[0]);
+          console.log('First provider bio:', response.data.providers[0].bio);
+          console.log('First provider businessName:', response.data.providers[0].businessName);
+          console.log('First provider document:', response.data.providers[0].document);
+        }
       } else {
         throw new Error(response.data.message);
       }
@@ -42,10 +48,8 @@ const ProviderVerification = () => {
     try {
       setProcessing(true);
       
-      // Log the verification attempt
       console.log('Attempting verification:', { providerId, status, remarks });
 
-      // Update the API endpoint to match the server route
       const response = await api.post(`/admin/verifications/${providerId}/handle`, {
         status,
         remarks: remarks.trim()
@@ -71,13 +75,14 @@ const ProviderVerification = () => {
     }
   };
 
-  // Add validation for remarks when rejecting
   const canReject = remarks.trim().length > 0;
 
-  // Add debug logging
   useEffect(() => {
     if (selectedProvider) {
+      console.log('Selected provider full data:', selectedProvider);
       console.log('Selected provider document:', selectedProvider.document);
+      console.log('Selected provider bio:', selectedProvider.bio);
+      console.log('Selected provider businessName:', selectedProvider.businessName);
     }
   }, [selectedProvider]);
 
@@ -131,9 +136,30 @@ const ProviderVerification = () => {
                 <h5 className="mb-0">Review Application</h5>
               </div>
               <div className="card-body">
+                <div className="mb-3">
+                  <h6>Provider Details</h6>
+                  <p className="mb-1"><strong>Name:</strong> {selectedProvider.name}</p>
+                  <p className="mb-1"><strong>Email:</strong> {selectedProvider.email}</p>
+                  {selectedProvider.phone && (
+                    <p className="mb-1"><strong>Phone:</strong> {selectedProvider.phone}</p>
+                  )}
+                  {selectedProvider.businessName && (
+                    <p className="mb-1"><strong>Business:</strong> {selectedProvider.businessName}</p>
+                  )}
+                  {selectedProvider.experience && (
+                    <p className="mb-1"><strong>Experience:</strong> {selectedProvider.experience} years</p>
+                  )}
+                  {selectedProvider.address && (
+                    <p className="mb-1"><strong>Address:</strong> {selectedProvider.address}</p>
+                  )}
+                </div>
+
                 <h6>Business Description</h6>
-                <p className="mb-4">{selectedProvider.description || 'No description provided'}</p>
+                <p className="mb-4">
+                  {selectedProvider.description || selectedProvider.bio || 'No description provided'}
+                </p>
                 
+                              
                 <h6>Verification Document</h6>
                 <div className="mb-4">
                   {selectedProvider.document?.url ? (
@@ -145,16 +171,28 @@ const ProviderVerification = () => {
                         className="btn btn-sm btn-outline-primary"
                       >
                         <i className="bi bi-file-earmark-text me-2"></i>
-                        View Document
+                        View Document ({selectedProvider.document.format?.toUpperCase() || 'File'})
                       </a>
                       <small className="text-muted d-block mt-1">
-                        Uploaded: {new Date(selectedProvider.document.uploadedAt).toLocaleDateString()}
+                        {selectedProvider.document.originalName || 'Verification Document'}
+                      </small>
+                      <small className="text-muted d-block">
+                        Uploaded: {selectedProvider.document.uploadedAt ? new Date(selectedProvider.document.uploadedAt).toLocaleDateString() : 'N/A'}
                       </small>
                     </div>
                   ) : (
-                    <p className="text-muted">No document uploaded</p>
+                    <div className="alert alert-warning">
+                      <i className="bi bi-exclamation-triangle me-2"></i>
+                      No verification document uploaded. Ask provider to submit document through their profile.
+                    </div>
                   )}
                 </div>
+                
+                {selectedProvider.verificationStatus?.remarks && (
+                  <div className="alert alert-secondary mb-3">
+                    <strong>Previous Remarks:</strong> {selectedProvider.verificationStatus.remarks}
+                  </div>
+                )}
                 
                 <div className="mb-3">
                   <label className="form-label">Remarks</label>
@@ -179,6 +217,7 @@ const ProviderVerification = () => {
                     className="btn btn-danger flex-grow-1"
                     onClick={() => handleVerification(selectedProvider._id, 'rejected')}
                     disabled={processing || !canReject}
+                    title={!canReject ? 'Remarks required for rejection' : ''}
                   >
                     {processing ? 'Processing...' : 'Reject'}
                   </button>

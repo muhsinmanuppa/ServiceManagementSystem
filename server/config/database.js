@@ -46,7 +46,6 @@ const connectDB = async () => {
   }
 };
 
-// Add disconnect function
 const disconnectDB = async () => {
   if (cached.conn) {
     await mongoose.disconnect();

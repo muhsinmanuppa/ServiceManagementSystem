@@ -9,7 +9,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 
 const CategoryManagement = () => {
   const dispatch = useDispatch();
-  const { items: categories, loading } = useSelector(state => state.category); // Fix selector
+  const { items: categories, loading } = useSelector(state => state.category); 
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -17,7 +17,7 @@ const CategoryManagement = () => {
   const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchCategories()); // Add this effect to fetch categories
+    dispatch(fetchCategories()); 
   }, [dispatch]);
 
   const handleSubmit = async (formData) => {
@@ -103,7 +103,6 @@ const CategoryManagement = () => {
         ))}
       </div>
 
-      {/* Category Form Modal */}
       <Modal
         show={showForm}
         onHide={() => {
@@ -123,7 +122,6 @@ const CategoryManagement = () => {
         </Modal.Body>
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         show={showDeleteConfirm}
         title="Delete Category"

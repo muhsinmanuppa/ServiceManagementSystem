@@ -13,17 +13,17 @@ const ProviderBookings = () => {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const { items: bookings, loading, error } = useSelector(state => {
-    console.log('Booking state:', state.booking); // Add debug logging
+    console.log('Booking state:', state.booking); 
     return state.booking;
   });
 
   useEffect(() => {
     const loadBookings = async () => {
       try {
-        console.log('Fetching provider bookings...'); // Add debug logging
+        console.log('Fetching provider bookings...'); 
         await dispatch(fetchBookings('provider')).unwrap();
       } catch (err) {
-        console.error('Error loading bookings:', err); // Add debug logging
+        console.error('Error loading bookings:', err); 
         dispatch(showNotification({
           type: 'error',
           message: err.message || 'Failed to load bookings'
@@ -128,6 +128,7 @@ const ProviderBookings = () => {
               <th>Service</th>
               <th>Date</th>
               <th>Amount</th>
+              <th>Review</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -139,6 +140,25 @@ const ProviderBookings = () => {
                 <td>{booking.service?.title || 'Unknown Service'}</td>
                 <td>{new Date(booking.scheduledDate).toLocaleString()}</td>
                 <td>{formatPrice(booking.totalAmount || 0)}</td>
+                <td>
+                  {booking.rating ? (
+                    <div className="d-flex flex-column">
+                      <div>
+                        <RatingStars rating={Number(booking.rating.score) || 0} readonly size="sm" />
+                      </div>
+                      {(() => {
+                        const text = (booking.rating?.review ?? booking.rating?.comment ?? '').toString();
+                        return (
+                          <small className="text-muted">
+                            {text ? `Reviewed · ${text.slice(0, 60)}${text.length > 60 ? '…' : ''}` : 'Reviewed'}
+                          </small>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <span className="text-muted">No review</span>
+                  )}
+                </td>
                 <td>
                   <span className={`badge bg-${getStatusBadgeColor(booking.status)}`}>
                     {booking.status}

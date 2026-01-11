@@ -1,7 +1,6 @@
 import { createSelector } from 'reselect';
 import { selectAllBookings } from './bookingSlice';
 
-// Memoized filter selectors
 export const selectFilteredBookings = createSelector(
   [selectAllBookings, (_, filters) => filters],
   (bookings, filters) => {

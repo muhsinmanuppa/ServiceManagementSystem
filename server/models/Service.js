@@ -50,7 +50,6 @@ const serviceSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Add a pre-save middleware to validate provider
 serviceSchema.pre('save', async function(next) {
   if (this.isNew && !this.provider) {
     next(new Error('Provider is required'));

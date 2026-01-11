@@ -24,7 +24,6 @@ export default function VerifyEmail() {
           type: "success"
         }));
         
-        // Redirect to login after a short delay
         setTimeout(() => {
           navigate('/login');
         }, 3000);

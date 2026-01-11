@@ -14,10 +14,7 @@ const ReportGenerator = ({ onDataReceived }) => {
     setLoading(true);
 
     try {
-      // Remove or replace the analytics API call on line 18:
-      // const response = await api.get('/provider/analytics/report', {
-      // Replace with appropriate endpoint or remove the component entirely if it's only used for analytics
-      onDataReceived({});
+          onDataReceived({});
     } catch (error) {
       console.error('Error generating report:', error);
     } finally {

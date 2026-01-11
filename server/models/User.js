@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import argon2 from 'argon2';
 
 const userSchema = new mongoose.Schema({
+  // Basic info
   name: {
     type: String,
     required: [true, 'Name is required'],
@@ -17,7 +18,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Password is required'],
-    select: false // Don't include password by default in queries
+    select: false 
   },
   role: {
     type: String,
@@ -26,8 +27,8 @@ const userSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'suspended'],
-    default: 'active'
+    enum: ['pending', 'active', 'suspended'],
+    default: 'pending'
   },
   isEmailVerified: {
     type: Boolean,
@@ -35,15 +36,18 @@ const userSchema = new mongoose.Schema({
   },
   verificationOtp: String,
   verificationOtpExpiry: Date,
+
   createdAt: {
     type: Date,
     default: Date.now
   },
+
   // Provider specific fields
   description: {
     type: String,
     trim: true
   },
+
   document: {
     url: String,
     publicId: String,
@@ -51,6 +55,9 @@ const userSchema = new mongoose.Schema({
     format: String,
     uploadedAt: Date
   },
+
+
+  // Verification details
   verificationStatus: {
     status: {
       type: String,
@@ -64,7 +71,7 @@ const userSchema = new mongoose.Schema({
       ref: 'User'
     }
   },
-  // New fields
+
   phone: {
     type: String,
     trim: true
@@ -85,12 +92,13 @@ const userSchema = new mongoose.Schema({
     type: Number,
     min: 0
   }
+
 }, {
   timestamps: true
 });
 
 // Remove sensitive information when converting to JSON
-userSchema.methods.toJSON = function() {
+userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
   delete obj.verificationOtp;
@@ -98,8 +106,8 @@ userSchema.methods.toJSON = function() {
   return obj;
 };
 
-// Update password comparison method with better error handling
-userSchema.methods.matchPassword = async function(enteredPassword) {
+// Password comparison
+userSchema.methods.matchPassword = async function (enteredPassword) {
   try {
     if (!this.password || !enteredPassword) {
       console.error('Missing password for comparison');
@@ -113,8 +121,8 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
   }
 };
 
-// Improve password hashing middleware
-userSchema.pre('save', async function(next) {
+// Hash password before saving
+userSchema.pre('save', async function (next) {
   try {
     if (!this.isModified('password')) {
       return next();

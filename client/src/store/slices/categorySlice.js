@@ -5,7 +5,6 @@ export const fetchCategories = createAsyncThunk(
   'categories/fetchCategories',
   async (_, { rejectWithValue }) => {
     try {
-      // Updated to use the correct endpoint for public category listing
       const response = await api.get('/categories');
       
       console.log('Categories response:', response.data);
@@ -21,10 +20,9 @@ export const createCategory = createAsyncThunk(
   'categories/createCategory',
   async (data, { rejectWithValue }) => {
     try {
-      // Remove /api prefix since it's already in the baseURL
       const response = await api.post('/admin/categories', data, {
         headers: {
-          'Content-Type': 'application/json' // Change this to handle JSON data
+          'Content-Type': 'application/json' 
         }
       });
       
@@ -67,7 +65,7 @@ export const deleteCategory = createAsyncThunk(
 );
 
 const initialState = {
-  items: [], // Ensure this exists
+  items: [], 
   loading: false,
   error: null
 };

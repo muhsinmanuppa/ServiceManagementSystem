@@ -1,8 +1,3 @@
-/**
- * Social sharing functionality
- */
-
-// Wait until DOM is fully loaded before executing
 (function() {
   function initShareFunctionality() {
     // Only initialize if share buttons exist on the page
@@ -26,8 +21,6 @@
         }
       });
     }
-    
-    // Close share modal when clicking outside
     const shareModal = document.querySelector('.share-modal');
     const shareButtonEl = document.querySelector('.share-button');
     
@@ -40,7 +33,6 @@
     }
   }
   
-  // If DOM is already loaded, init immediately, otherwise wait for DOMContentLoaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initShareFunctionality);
   } else {

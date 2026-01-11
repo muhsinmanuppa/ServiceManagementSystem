@@ -15,7 +15,6 @@ const ServiceHistory = () => {
         setLoading(true);
         const response = await api.get('/provider/bookings');
         
-        // Sort bookings by date in descending order
         const sortedBookings = (response.data.bookings || []).sort((a, b) => 
           new Date(b.createdAt) - new Date(a.createdAt)
         );

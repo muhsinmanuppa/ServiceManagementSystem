@@ -6,52 +6,48 @@ import api from '../../utils/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ProviderStats from '../../components/admin/ProviderStats';
 
-const ProviderList = () => {
-  const [providers, setProviders] = useState([]);
+const UserList = () => {
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProvider, setSelectedProvider] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
     status: '',
     verificationStatus: ''
   });
+
   const dispatch = useDispatch();
 
-  const fetchProviders = async () => {
+  const fetchUsers = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
       if (filters.status) params.append('status', filters.status);
       if (filters.verificationStatus) params.append('verificationStatus', filters.verificationStatus);
-      
-      const response = await api.get('/admin/providers/list', { params }); // Update endpoint
-      
+
+      const response = await api.get('/admin/providers/list', { params });
+
       if (response.data.success) {
-        console.log('Fetched providers:', response.data.providers); // Add debug log
-        setProviders(response.data.providers);
+        console.log('Fetched users:', response.data.users);
+        setUsers(response.data.users);
       } else {
-        throw new Error(response.data.message || 'Failed to fetch providers');
+        throw new Error(response.data.message || 'Failed to fetch users');
       }
     } catch (error) {
-      console.error('Provider fetch error:', error);
+      console.error('User fetch error:', error);
       dispatch(showNotification({
         type: 'error',
-        message: error.response?.data?.message || 'Failed to fetch providers'
+        message: error.response?.data?.message || 'Failed to fetch users'
       }));
     } finally {
       setLoading(false);
     }
   };
 
-  // Add debug logging
   useEffect(() => {
-    console.log('Current filters:', filters);
-  }, [filters]);
-
-  useEffect(() => {
-    fetchProviders();
+    fetchUsers();
   }, [filters]);
 
   const handleFilterChange = (e) => {
@@ -62,19 +58,19 @@ const ProviderList = () => {
     }));
   };
 
-  const handleStatusChange = async (providerId, newStatus) => {
+  const handleStatusChange = async (userId, newStatus) => {
     try {
-      await api.put(`/admin/providers/${providerId}/status`, { status: newStatus });
-      
-      setProviders(providers.map(provider => 
-        provider._id === providerId 
-          ? { ...provider, status: newStatus }
-          : provider
-      ));
+      await api.put(`/admin/providers/${userId}/status`, { status: newStatus });
+
+      setUsers(prev =>
+        prev.map(user =>
+          user._id === userId ? { ...user, status: newStatus } : user
+        )
+      );
 
       dispatch(showNotification({
         type: 'success',
-        message: `Provider ${newStatus === 'active' ? 'activated' : 'suspended'} successfully`
+        message: `User ${newStatus === 'active' ? 'activated' : 'suspended'} successfully`
       }));
     } catch (error) {
       dispatch(showNotification({
@@ -100,9 +96,9 @@ const ProviderList = () => {
 
   return (
     <div className="container-fluid px-4">
-      <h2 className="my-4">Provider Management</h2>
-      <ProviderStats />
-      
+      <h2 className="my-4">User Management</h2>
+      <ProviderStats /> 
+
       <Card className="mb-4">
         <Card.Body>
           <div className="row g-3">
@@ -110,14 +106,14 @@ const ProviderList = () => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Search providers..."
+                placeholder="Search users..."
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
               />
             </div>
             <div className="col-md-3">
-              <select 
+              <select
                 className="form-select"
                 name="status"
                 value={filters.status}
@@ -129,7 +125,7 @@ const ProviderList = () => {
               </select>
             </div>
             <div className="col-md-3">
-              <select 
+              <select
                 className="form-select"
                 name="verificationStatus"
                 value={filters.verificationStatus}
@@ -152,6 +148,7 @@ const ProviderList = () => {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Role</th>
                 <th>Email</th>
                 <th>Verification Status</th>
                 <th>Account Status</th>
@@ -160,31 +157,32 @@ const ProviderList = () => {
               </tr>
             </thead>
             <tbody>
-              {providers.map(provider => (
-                <tr key={provider._id}>
+              {users.map(user => (
+                <tr key={user._id}>
                   <td>
                     <Button
                       variant="link"
                       className="p-0 text-decoration-none"
                       onClick={() => {
-                        setSelectedProvider(provider);
+                        setSelectedUser(user);
                         setShowDetails(true);
                       }}
                     >
-                      {provider.name}
+                      {user.name}
                     </Button>
                   </td>
-                  <td>{provider.email}</td>
-                  <td>{getStatusBadge(provider.verificationStatus?.status)}</td>
-                  <td>{getStatusBadge(provider.status || 'active')}</td>
-                  <td>{new Date(provider.createdAt).toLocaleDateString()}</td>
+                  <td>{user.role}</td>
+                  <td>{user.email}</td>
+                  <td>{getStatusBadge(user.verificationStatus?.status)}</td>
+                  <td>{getStatusBadge(user.status || 'active')}</td>
+                  <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td>
                     <div className="btn-group">
-                      {provider.status !== 'suspended' ? (
+                      {user.status !== 'suspended' ? (
                         <Button
                           variant="warning"
                           size="sm"
-                          onClick={() => handleStatusChange(provider._id, 'suspended')}
+                          onClick={() => handleStatusChange(user._id, 'suspended')}
                         >
                           Suspend
                         </Button>
@@ -192,7 +190,7 @@ const ProviderList = () => {
                         <Button
                           variant="success"
                           size="sm"
-                          onClick={() => handleStatusChange(provider._id, 'active')}
+                          onClick={() => handleStatusChange(user._id, 'active')}
                         >
                           Activate
                         </Button>
@@ -206,38 +204,39 @@ const ProviderList = () => {
         </Card.Body>
       </Card>
 
-      <Modal 
-        show={showDetails} 
+      <Modal
+        show={showDetails}
         onHide={() => setShowDetails(false)}
         size="lg"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Provider Details</Modal.Title>
+          <Modal.Title>User Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {selectedProvider && (
+          {selectedUser && (
             <div>
               <h5>Basic Information</h5>
-              <p><strong>Name:</strong> {selectedProvider.name}</p>
-              <p><strong>Email:</strong> {selectedProvider.email}</p>
-              <p><strong>Joined:</strong> {new Date(selectedProvider.createdAt).toLocaleDateString()}</p>
-              
+              <p><strong>Name:</strong> {selectedUser.name}</p>
+              <p><strong>Email:</strong> {selectedUser.email}</p>
+              <p><strong>Role:</strong> {selectedUser.role}</p>
+              <p><strong>Joined:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</p>
+
               <h5 className="mt-4">Verification Details</h5>
-              <p><strong>Status:</strong> {getStatusBadge(selectedProvider.verificationStatus?.status)}</p>
-              {selectedProvider.verificationStatus?.remarks && (
-                <p><strong>Remarks:</strong> {selectedProvider.verificationStatus.remarks}</p>
+              <p><strong>Status:</strong> {getStatusBadge(selectedUser.verificationStatus?.status)}</p>
+              {selectedUser.verificationStatus?.remarks && (
+                <p><strong>Remarks:</strong> {selectedUser.verificationStatus.remarks}</p>
               )}
-              {selectedProvider.document?.url && (
+              {selectedUser.document?.url && (
                 <p>
                   <strong>Document:</strong>{' '}
-                  <a href={selectedProvider.document.url} target="_blank" rel="noopener noreferrer">
+                  <a href={selectedUser.document.url} target="_blank" rel="noopener noreferrer">
                     View Document
                   </a>
                 </p>
               )}
-              
+
               <h5 className="mt-4">Business Description</h5>
-              <p>{selectedProvider.description || 'No description provided'}</p>
+              <p>{selectedUser.description || 'No description provided'}</p>
             </div>
           )}
         </Modal.Body>
@@ -246,4 +245,4 @@ const ProviderList = () => {
   );
 };
 
-export default ProviderList;
+export default UserList;

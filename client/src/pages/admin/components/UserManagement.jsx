@@ -4,7 +4,6 @@ export default function UserManagement({ users, onStatusChange }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
-  // Filter users based on search term and selected role
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 

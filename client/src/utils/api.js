@@ -4,7 +4,7 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api', // Add fallback
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api', 
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
@@ -12,7 +12,6 @@ const api = axios.create({
   withCredentials: true
 });
 
-// Remove test/ping from public paths
 const publicPaths = [
   'auth/login',
   'auth/register',
@@ -21,7 +20,7 @@ const publicPaths = [
   'auth/verify-otp'
 ];
 
-// Update profile endpoint logic
+// Update profile
 const getProfileEndpoint = (userRole, path) => {
   if (path.includes('/profile')) {
     switch (userRole) {
@@ -36,13 +35,13 @@ const getProfileEndpoint = (userRole, path) => {
   return path;
 };
 
-// Update request interceptor
+// Update request
 api.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    // Handle profile endpoint routing
+    // profile routing
     if (config.url.includes('/profile')) {
       config.url = getProfileEndpoint(user.role, config.url);
     }
@@ -56,7 +55,6 @@ api.interceptors.request.use(
   error => Promise.reject(error)
 );
 
-// Add request interceptor logging
 api.interceptors.request.use(
   config => {
     console.log('API Request:', {
@@ -71,18 +69,15 @@ api.interceptors.request.use(
   }
 );
 
-// Simplify error handling in response interceptor
 api.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config;
 
-    // Don't retry auth endpoints or already retried requests
     if (originalRequest._retry || originalRequest.url?.includes('auth/')) {
       return Promise.reject(error);
     }
 
-    // Only retry network errors
     if (!error.response && !originalRequest._retry) {
       let retries = 0;
       while (retries < MAX_RETRIES) {
@@ -103,7 +98,6 @@ api.interceptors.response.use(
   }
 );
 
-// Add response interceptor logging
 api.interceptors.response.use(
   response => {
     console.log('API Response:', {
@@ -124,7 +118,6 @@ api.interceptors.response.use(
   }
 );
 
-// Add interceptor to log payment-related requests
 api.interceptors.request.use(
   config => {
     if (config.url?.includes('/payments/')) {
@@ -139,7 +132,6 @@ api.interceptors.request.use(
   error => Promise.reject(error)
 );
 
-// Add payment endpoint debug logging
 api.interceptors.request.use(
   config => {
     if (config.url?.includes('/payments/')) {
@@ -178,5 +170,4 @@ api.interceptors.response.use(
   }
 );
 
-// Export the api instance
 export { api as default };

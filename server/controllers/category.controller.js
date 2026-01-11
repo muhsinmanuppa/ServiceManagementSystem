@@ -162,10 +162,6 @@ export const deleteCategory = async (req, res) => {
     const serviceCount = await Service.countDocuments({ category: id });
     
     if (serviceCount > 0) {
-      // Option 1: Don't allow deletion if services exist
-      // return res.status(409).json({ message: `Cannot delete category. It is used by ${serviceCount} services.` });
-      
-      // Option 2: Update services to remove category reference
       await Service.updateMany({ category: id }, { $unset: { category: 1 } });
     }
     

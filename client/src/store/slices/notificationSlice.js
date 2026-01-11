@@ -5,18 +5,21 @@ const notificationSlice = createSlice({
   initialState: {
     type: null,
     message: null,
-    show: false
+    show: false,
+    duration: null 
   },
   reducers: {
     showNotification: (state, action) => {
       state.type = action.payload.type;
       state.message = action.payload.message;
+      state.duration = action.payload.duration;  
       state.show = true;
     },
     hideNotification: (state) => {
       state.show = false;
       state.type = null;
       state.message = null;
+      state.duration = null;  
     }
   }
 });

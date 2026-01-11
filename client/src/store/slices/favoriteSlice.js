@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../utils/api';
 import { showNotification } from './notificationSlice';
 
-// Fetch user favorites
 export const fetchFavorites = createAsyncThunk(
   'favorites/fetchFavorites',
   async (_, { rejectWithValue }) => {
@@ -15,7 +14,6 @@ export const fetchFavorites = createAsyncThunk(
   }
 );
 
-// Add a service to favorites
 export const addFavorite = createAsyncThunk(
   'favorites/addFavorite',
   async (service, { rejectWithValue, dispatch }) => {
@@ -29,7 +27,7 @@ export const addFavorite = createAsyncThunk(
       
       return {
         ...response.data,
-        service // include the full service object for UI
+        service 
       };
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: 'Failed to add to favorites' });
@@ -37,7 +35,6 @@ export const addFavorite = createAsyncThunk(
   }
 );
 
-// Remove a service from favorites
 export const removeFavorite = createAsyncThunk(
   'favorites/removeFavorite',
   async (serviceId, { rejectWithValue, dispatch }) => {
@@ -64,16 +61,16 @@ const favoriteSlice = createSlice({
     error: null
   },
   reducers: {
-    // Local toggle for better user experience (optimistic updates)
+
     toggleFavorite: (state, action) => {
       const service = action.payload;
       const existingIndex = state.items.findIndex(item => item.serviceId === service._id);
       
       if (existingIndex !== -1) {
-        // If exists, remove it
+
         state.items.splice(existingIndex, 1);
       } else {
-        // If doesn't exist, add it
+
         state.items.push({
           serviceId: service._id,
           service: {
@@ -106,7 +103,6 @@ const favoriteSlice = createSlice({
       })
       
       .addCase(addFavorite.fulfilled, (state, action) => {
-        // Check if it already exists (to prevent duplicates)
         const exists = state.items.some(item => item.serviceId === action.payload.serviceId);
         if (!exists) {
           state.items.push(action.payload);

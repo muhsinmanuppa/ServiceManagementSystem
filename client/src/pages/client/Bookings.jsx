@@ -17,8 +17,8 @@ const defaultImageUrl = 'https://placehold.co/50x50/eee/999?text=Service';
 const Bookings = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const bookings = useSelector(selectAllBookings) || []; // Add fallback empty array
-  const loading = useSelector(selectBookingsLoading) || false; // Add fallback values
+  const bookings = useSelector(selectAllBookings) || []; 
+  const loading = useSelector(selectBookingsLoading) || false; 
   const error = useSelector(selectBookingsError) || null;
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,9 +54,7 @@ const Bookings = () => {
     }
   };
   
-  // Filter bookings based on status and search term
   const filteredBookings = Array.isArray(bookings) ? bookings.filter(booking => {
-    // Skip items with missing service property
     if (!booking || !booking.service || !booking.provider) return false;
     
     const matchesFilter = filter === 'all' || booking.status === filter;

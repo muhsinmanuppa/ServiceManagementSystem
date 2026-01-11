@@ -34,7 +34,6 @@ const EditService = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch both categories and service data in parallel
         const [categoriesRes, serviceRes] = await Promise.all([
           api.get('/categories'),
           api.get(`/provider/services/${id}`)
@@ -108,18 +107,15 @@ const EditService = () => {
 
   const updateService = async ({ id, serviceData }) => {
     try {
-      // Create full service data with image
       const updateData = new FormData();
       updateData.append('title', serviceData.get('title'));
       updateData.append('description', serviceData.get('description'));
       updateData.append('price', serviceData.get('price'));
       updateData.append('category', serviceData.get('category'));
       
-      // If there's a new file, append it
       if (selectedFile) {
         updateData.append('serviceImage', selectedFile);
       } else if (formData.existingImage) {
-        // Keep existing image
         updateData.append('imageUrl', formData.existingImage);
       }
 
@@ -184,14 +180,12 @@ const EditService = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
       if (!validTypes.includes(file.type)) {
         setFormErrors({...formErrors, image: 'Please upload a valid image file (JPEG, PNG, or GIF)'});
         return;
       }
       
-      // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
         setFormErrors({...formErrors, image: 'Image size should be less than 5MB'});
         return;

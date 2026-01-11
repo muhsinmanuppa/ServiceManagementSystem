@@ -54,7 +54,6 @@ const notificationSchema = new mongoose.Schema(
   }
 );
 
-// Create a compound index for efficient querying
 notificationSchema.index({ recipient: 1, read: 1, createdAt: -1 });
 
 const Notification = mongoose.model('Notification', notificationSchema);

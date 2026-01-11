@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../utils/api';
 
-// Rename fetchProviderStats to fetchStats for consistency
 export const fetchStats = createAsyncThunk(
   'provider/fetchStats',
   async () => {

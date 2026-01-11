@@ -12,7 +12,6 @@ const ImageUpload = ({
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     
-    // Validate file count
     if (files.length + previewUrls.length > maxImages) {
       alert(`Maximum ${maxImages} images allowed`);
       return;
@@ -21,7 +20,7 @@ const ImageUpload = ({
     // Validate file types and size
     const validFiles = files.filter(file => {
       const isValid = file.type.startsWith('image/');
-      const isWithinSize = file.size <= 5 * 1024 * 1024; // 5MB limit
+      const isWithinSize = file.size <= 5 * 1024 * 1024; 
       return isValid && isWithinSize;
     });
 

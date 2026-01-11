@@ -1,10 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import io from 'socket.io-client';
 
-// Get API URL from environment
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// Initialize socket connection
 export const initializeSocket = createAsyncThunk(
   'socket/initialize',
   async (token, { rejectWithValue }) => {
@@ -22,7 +20,6 @@ export const initializeSocket = createAsyncThunk(
         reconnectionAttempts: 5
       });
       
-      // Wrap in a promise to handle connection
       return new Promise((resolve, reject) => {
         socket.on('connect', () => {
           console.log('Socket connected with ID:', socket.id);
@@ -34,7 +31,6 @@ export const initializeSocket = createAsyncThunk(
           reject(error.message);
         });
         
-        // Set a timeout to reject if connection takes too long
         setTimeout(() => {
           if (!socket.connected) {
             reject('Socket connection timeout');

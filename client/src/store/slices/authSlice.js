@@ -20,10 +20,8 @@ export const login = createAsyncThunk(
         throw new Error('Invalid server response');
       }
 
-      // Set token in API headers immediately
       api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 
-      // Store auth data in localStorage
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       localStorage.setItem('authTime', Date.now().toString());
@@ -39,7 +37,6 @@ export const login = createAsyncThunk(
   }
 );
 
-// Remove automatic OTP sending after registration since it's now handled by the backend
 export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
@@ -57,7 +54,6 @@ export const register = createAsyncThunk(
   }
 );
 
-// Add a dedicated sendOtp function for initial OTP sending during registration
 export const sendOtp = createAsyncThunk(
   'auth/sendOtp',
   async (email, { rejectWithValue }) => {
@@ -80,7 +76,7 @@ export const sendOtp = createAsyncThunk(
   }
 );
 
-// Add the resendOtp action creator
+// resendOtp
 export const resendOtp = createAsyncThunk(
   'auth/resendOtp',
   async ({ email }, { rejectWithValue }) => {
@@ -93,7 +89,7 @@ export const resendOtp = createAsyncThunk(
   }
 );
 
-// Add the verifyOtp action creator
+// verifyOtp
 export const verifyOtp = createAsyncThunk(
   'auth/verifyOtp',
   async ({ email, otp }, { rejectWithValue }) => {
@@ -106,7 +102,7 @@ export const verifyOtp = createAsyncThunk(
   }
 );
 
-// Add a new action to update user profile in auth state
+// update user profile
 export const updateUserProfile = createAsyncThunk(
   'auth/updateUserProfile',
   async (profileData, { rejectWithValue }) => {
@@ -119,7 +115,7 @@ export const updateUserProfile = createAsyncThunk(
   }
 );
 
-// Add verification status update action
+// verification status update
 export const applyForVerification = createAsyncThunk(
   'auth/applyForVerification',
   async (formData, { rejectWithValue }) => {
@@ -136,7 +132,6 @@ export const applyForVerification = createAsyncThunk(
   }
 );
 
-// Rename the thunk to validateSessionAsync
 export const validateSessionAsync = createAsyncThunk(
   'auth/validateSession',
   async (_, { dispatch, rejectWithValue }) => {
@@ -186,7 +181,6 @@ const authSlice = createSlice({
     clearAuthError: (state) => {
       state.error = null;
     },
-    // Add this reducer
     setAuth: (state, action) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
@@ -204,7 +198,6 @@ const authSlice = createSlice({
     clearRedirect: (state) => {
       state.redirectTo = null;
     },
-    // Add a reducer to update user in state after profile changes
     updateUser: (state, action) => {
       state.user = {
         ...state.user,
@@ -212,7 +205,6 @@ const authSlice = createSlice({
       };
       localStorage.setItem('user', JSON.stringify(state.user));
     },
-    // Rename this reducer to validateLocalSession
     validateLocalSession: (state) => {
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user'));
@@ -255,7 +247,6 @@ const authSlice = createSlice({
         state.error = action.payload?.message || 'Login failed';
         state.isAuthenticated = false;
       })
-      // Add register cases
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -268,7 +259,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Add sendOtp cases
       .addCase(sendOtp.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -280,20 +270,17 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Add reducers for resendOtp
       .addCase(resendOtp.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(resendOtp.fulfilled, (state) => {
         state.loading = false;
-        // You might want to set some state here to indicate success
       })
       .addCase(resendOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      // Add reducers for verifyOtp
       .addCase(verifyOtp.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -306,7 +293,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Handle profile update
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         state.user = action.payload.user;
         localStorage.setItem('user', JSON.stringify(action.payload.user));
@@ -317,7 +303,6 @@ const authSlice = createSlice({
           localStorage.setItem('user', JSON.stringify(state.user));
         }
       })
-      // Add cases for validateSessionAsync
       .addCase(validateSessionAsync.pending, (state) => {
         state.loading = true;
       })
@@ -344,7 +329,7 @@ export const {
   clearAuth, 
   clearRedirect, 
   updateUser, 
-  validateLocalSession, // Update export name
+  validateLocalSession, 
   updateVerificationStatus
 } = authSlice.actions;
 

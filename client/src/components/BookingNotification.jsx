@@ -55,7 +55,7 @@ const BookingNotification = () => {
     }
   };
 
-  return null; // This is a non-visual component
+  return null; 
 };
 
 export default BookingNotification;

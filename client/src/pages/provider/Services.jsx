@@ -73,14 +73,13 @@ const Services = () => {
 
   const handleSubmit = async (formData) => {
     try {
-      // Ensure the file field name matches backend expectation
+    
       const data = new FormData();
       data.append('title', formData.title);
       data.append('description', formData.description);
       data.append('price', formData.price);
       data.append('category', formData.category);
       
-      // Rename 'image' to 'serviceImages' to match backend
       if (formData.image) {
         data.append('serviceImages', formData.image);
       }
@@ -96,7 +95,6 @@ const Services = () => {
           type: 'success',
           message: 'Service created successfully'
         }));
-        // Refresh services list
         fetchServices();
       }
     } catch (err) {

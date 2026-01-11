@@ -2,9 +2,7 @@ import razorpay from '../config/razorpay.js';
 import Booking from '../models/Booking.js';
 import crypto from 'crypto';
 import { createInvoiceData } from '../utils/invoiceUtils.js';
-import { getIO } from '../socket/socket.js';
 
-// Utility function for payment verification
 const verifyPaymentSignature = (orderId, paymentId, signature) => {
   const generated_signature = crypto
     .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
@@ -13,7 +11,6 @@ const verifyPaymentSignature = (orderId, paymentId, signature) => {
   return generated_signature === signature;
 };
 
-// Initiate payment for a booking
 export const initiatePayment = async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -25,7 +22,6 @@ export const initiatePayment = async (req, res) => {
       return res.status(404).json({ message: 'Booking not found' });
     }
     
-    // Verify that the user making the request is the booking client
     if (booking.client.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to make payment for this booking' });
     }
@@ -40,10 +36,10 @@ export const initiatePayment = async (req, res) => {
     const currency = 'INR';
     
     const options = {
-      amount: amount * 100, // amount in smallest currency unit (paise)
+      amount: amount * 100, 
       currency,
       receipt: `booking_${booking._id}`,
-      payment_capture: 1 // auto-capture
+      payment_capture: 1 
     };
     
     const order = await razorpay.orders.create(options);
@@ -108,7 +104,7 @@ export const verifyPayment = async (req, res) => {
   }
 };
 
-// Generate invoice for a booking - Use the imported function from invoiceUtils
+// Generate invoice for a booking
 export const generateInvoice = async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -201,7 +197,7 @@ export const createOrder = async (req, res) => {
     
     // Create a Razorpay order
     const options = {
-      amount: amount * 100, // Convert to paisa
+      amount: amount * 100, 
       currency: "INR",
       receipt: `booking_${bookingId}`,
       payment_capture: 1

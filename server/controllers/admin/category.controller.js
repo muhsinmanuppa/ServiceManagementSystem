@@ -1,7 +1,6 @@
 import Category from '../../models/Category.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../../config/cloudinary.js';
 
-// Get all categories
 export const getAllCategories = async (req, res) => {
   try {
     const categories = await Category.find().sort({ name: 1 });
@@ -24,14 +23,12 @@ export const createCategory = async (req, res) => {
     console.log('Create category request:', req.body);
     const { name, description } = req.body;
     
-    // Validate required fields
     if (!name || !name.trim()) {
       return res.status(400).json({ 
         message: 'Category name is required' 
       });
     }
 
-    // Check for duplicate name
     const existingCategory = await Category.findOne({ 
       name: { $regex: new RegExp(`^${name.trim()}$`, 'i') } 
     });
@@ -42,7 +39,6 @@ export const createCategory = async (req, res) => {
       });
     }
 
-    // Create new category
     const category = new Category({
       name: name.trim(),
       description: description?.trim() || '',
@@ -52,7 +48,6 @@ export const createCategory = async (req, res) => {
     await category.save();
     console.log('Category created:', category);
 
-    // Return with proper response structure
     res.status(201).json({
       success: true,
       message: 'Category created successfully',
@@ -68,7 +63,6 @@ export const createCategory = async (req, res) => {
   }
 };
 
-// Update category
 export const updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -94,7 +88,6 @@ export const updateCategory = async (req, res) => {
   }
 };
 
-// Delete category
 export const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;

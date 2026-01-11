@@ -1,7 +1,5 @@
 import User from '../models/User.js';
 
-// Basic implementation of profile controller
-
 /**
  * Get user profile 
  */

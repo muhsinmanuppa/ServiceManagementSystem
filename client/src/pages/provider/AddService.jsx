@@ -11,7 +11,7 @@ const AddService = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
-  const categories = useSelector(state => state.category?.items) || []; // Add fallback
+  const categories = useSelector(state => state.category?.items) || [];
   const loading = useSelector(state => state.service.loading);
   const [formData, setFormData] = useState({
     title: '',
@@ -29,7 +29,6 @@ const AddService = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    // Cleanup preview URL when component unmounts
     return () => {
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
@@ -41,7 +40,6 @@ const AddService = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     
-    // Clear error when user types
     if (formErrors[name]) {
       setFormErrors({ ...formErrors, [name]: null });
     }
@@ -50,7 +48,6 @@ const AddService = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
       if (!validTypes.includes(file.type)) {
         setFormErrors({...formErrors, image: 'Please upload a valid image file (JPEG, PNG, or GIF)'});
@@ -59,7 +56,6 @@ const AddService = () => {
       
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
-      // Clear any existing image errors
       setFormErrors({...formErrors, image: null});
     }
   };
@@ -83,7 +79,6 @@ const AddService = () => {
       return;
     }
 
-    // Validate file size (5MB limit)
     if (selectedFile.size > 5 * 1024 * 1024) {
       setFormErrors({...formErrors, image: 'Image size should be less than 5MB'});
       return;
@@ -93,7 +88,6 @@ const AddService = () => {
     
     try {
       const serviceFormData = new FormData();
-      // Ensure all form fields are trimmed and properly formatted
       serviceFormData.append('title', formData.title.trim());
       serviceFormData.append('description', formData.description.trim());
       serviceFormData.append('price', parseFloat(formData.price));
@@ -101,7 +95,6 @@ const AddService = () => {
         serviceFormData.append('category', formData.category);
       }
       
-      // Important: Match the field name expected by multer
       serviceFormData.append('serviceImage', selectedFile);
 
       const response = await dispatch(createService(serviceFormData)).unwrap();

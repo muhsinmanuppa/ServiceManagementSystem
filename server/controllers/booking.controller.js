@@ -14,7 +14,6 @@ export const createBooking = async (req, res) => {
       return res.status(404).json({ message: 'Service not found' });
     }
 
-    // Create booking with appropriate initial data
     const booking = new Booking({
       service: serviceId,
       client: req.user._id,
@@ -53,7 +52,6 @@ export const createBooking = async (req, res) => {
   }
 };
 
-// Get bookings for client
 export const getClientBookings = async (req, res) => {
   try {
     console.log('Fetching bookings for client:', req.user._id);
@@ -106,7 +104,7 @@ export const getProviderBookings = async (req, res) => {
 // Get booking by ID
 export const getBookingById = async (req, res) => {
   try {
-    console.log('Getting booking by ID:', req.params.id); // Add logging
+    console.log('Getting booking by ID:', req.params.id); 
 
     const booking = await Booking.findById(req.params.id)
       .populate('service')
@@ -114,7 +112,7 @@ export const getBookingById = async (req, res) => {
       .populate('client', 'name email avatar');
     
     if (!booking) {
-      console.log('Booking not found'); // Add logging
+      console.log('Booking not found'); 
       return res.status(404).json({ message: 'Booking not found' });
     }
 
@@ -234,7 +232,7 @@ export const updateBookingStatus = async (req, res) => {
   }
 };
 
-// Add helper function to validate status transitions
+// validate status transitions
 const validateStatusTransition = (currentStatus, newStatus) => {
   const validTransitions = {
     [VALID_BOOKING_STATUSES.PENDING]: [
@@ -247,10 +245,10 @@ const validateStatusTransition = (currentStatus, newStatus) => {
       VALID_BOOKING_STATUSES.CANCELLED
     ],
     [VALID_BOOKING_STATUSES.CONFIRMED]: [
-      VALID_BOOKING_STATUSES.IN_PROGRESS,  // Use constant
+      VALID_BOOKING_STATUSES.IN_PROGRESS, 
       VALID_BOOKING_STATUSES.CANCELLED
     ],
-    [VALID_BOOKING_STATUSES.IN_PROGRESS]: [  // Use constant
+    [VALID_BOOKING_STATUSES.IN_PROGRESS]: [  
       VALID_BOOKING_STATUSES.COMPLETED,
       VALID_BOOKING_STATUSES.CANCELLED
     ]

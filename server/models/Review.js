@@ -62,7 +62,6 @@ const reviewSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for performance
 reviewSchema.index({ service: 1, client: 1 }, { unique: true });
 reviewSchema.index({ service: 1, status: 1 });
 reviewSchema.index({ provider: 1, createdAt: -1 });

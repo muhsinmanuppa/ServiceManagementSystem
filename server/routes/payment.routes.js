@@ -16,7 +16,7 @@ router.use(authenticateUser);
 // Payment routes
 router.post('/create-order', createOrder);
 router.post('/verify', verifyPayment);
-router.get('/history', getPaymentHistory); // Use consistent endpoint
+router.get('/history', getPaymentHistory); 
 router.get('/bookings/:bookingId/invoice', generateInvoice);
 
 export default router;

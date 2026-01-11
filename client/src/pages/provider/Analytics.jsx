@@ -39,10 +39,8 @@ const Analytics = () => {
     loadData();
   }, [dispatch]);
 
-  // Process analytics data based on bookings and services
   useEffect(() => {
     if (bookings.length > 0) {
-      // Filter based on date range
       const now = new Date();
       let startDate;
       
@@ -64,7 +62,6 @@ const Analytics = () => {
         new Date(booking.scheduledDate) >= startDate && new Date(booking.scheduledDate) <= now
       );
 
-      // Calculate basic stats
       const totalRevenue = filteredBookings.reduce((sum, booking) => {
         return booking.paymentStatus === 'paid' ? sum + booking.totalAmount : sum;
       }, 0);
@@ -73,7 +70,6 @@ const Analytics = () => {
       const cancelledBookings = filteredBookings.filter(b => b.status === 'cancelled').length;
       const pendingBookings = filteredBookings.filter(b => ['pending', 'confirmed'].includes(b.status)).length;
 
-      // Group by service for revenue calculation
       const serviceRevenue = {};
       
       filteredBookings.forEach(booking => {
@@ -96,14 +92,11 @@ const Analytics = () => {
         serviceRevenue[serviceId].bookings += 1;
       });
       
-      // Convert to array and sort by revenue
       const revenueByService = Object.values(serviceRevenue).sort((a, b) => b.revenue - a.revenue);
 
-      // Calculate monthly bookings trends
       const bookingsByMonth = [];
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       
-      // Last 6 months
       for (let i = 5; i >= 0; i--) {
         const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const monthName = monthNames[monthDate.getMonth()];
@@ -122,7 +115,6 @@ const Analytics = () => {
         });
       }
       
-      // Calculate service performance
       const servicePerformance = services.map(service => {
         const serviceBookings = filteredBookings.filter(b => b.service._id === service._id);
         const completed = serviceBookings.filter(b => b.status === 'completed').length;
@@ -211,7 +203,6 @@ const Analytics = () => {
         </div>
       </div>
 
-      {/* Monthly Trends */}
       <div className="row mb-4">
         <div className="col-12">
           <div className="card">
@@ -243,7 +234,6 @@ const Analytics = () => {
         </div>
       </div>
 
-      {/* Service Performance */}
       <div className="row mb-4">
         <div className="col-12">
           <div className="card">
@@ -294,7 +284,6 @@ const Analytics = () => {
         </div>
       </div>
 
-      {/* Revenue by Service */}
       <div className="row mb-4">
         <div className="col-md-6">
           <div className="card h-100">

@@ -47,7 +47,7 @@ const Categories = () => {
       }));
       
       handleCloseModal();
-      dispatch(fetchCategories()); // Refresh the list
+      dispatch(fetchCategories()); 
     } catch (error) {
       console.error('Category submission error:', error);
       dispatch(showNotification({

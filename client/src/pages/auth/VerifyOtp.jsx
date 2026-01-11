@@ -16,17 +16,16 @@ export default function VerifyOtp() {
   const [resendLoading, setResendLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   
-  // Get email from location state
   useEffect(() => {
     if (location.state?.email) {
       setEmail(location.state.email);
     } else {
-      // If no email is provided, redirect to login
+
       navigate('/login');
     }
   }, [location, navigate]);
 
-  // Handle resend cooldown timer
+
   useEffect(() => {
     if (timeLeft <= 0) return;
     

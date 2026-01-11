@@ -69,7 +69,6 @@ const BookingModal = ({ show, onHide, service, onSuccess }) => {
       // Close the modal
       onHide();
   
-      // Optionally call a parent handler
       if (onSuccess) onSuccess(createdBooking);
       
     } catch (error) {

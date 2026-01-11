@@ -15,7 +15,7 @@ const Dashboard = () => {
       try {
         const response = await api.get('/admin/stats');
         if (response.data) {
-          console.log('Admin stats:', response.data); // Add debug logging
+          console.log('Admin stats:', response.data); 
           setStats(response.data);
         } else {
           throw new Error('No data received from server');

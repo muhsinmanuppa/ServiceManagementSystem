@@ -8,33 +8,24 @@ export const generateInvoice = async (payment) => {
     const invoiceNumber = `INV-${payment.orderId.slice(-6)}`;
     const invoicePath = path.join('uploads', 'invoices', `${invoiceNumber}.pdf`);
 
-    // Ensure directory exists
-    // fs.mkdirSync(path.join('uploads', 'invoices'), { recursive: true });
-
-    // Pipe PDF to file
     doc.pipe(fs.createWriteStream(invoicePath));
 
-    // Add content
     doc.fontSize(25).text('Invoice', { align: 'center' });
     doc.moveDown();
     doc.fontSize(12);
 
-    // Add invoice details
     doc.text(`Invoice Number: ${invoiceNumber}`);
     doc.text(`Date: ${new Date().toLocaleDateString()}`);
     doc.text(`Order ID: ${payment.orderId}`);
     doc.text(`Payment ID: ${payment.paymentId}`);
     doc.moveDown();
 
-    // Add amount
     doc.text(`Amount Paid: ₹${(payment.amount / 100).toFixed(2)}`);
     doc.text(`Payment Status: ${payment.status.toUpperCase()}`);
     doc.moveDown();
 
-    // Add footer
     doc.fontSize(10).text('Thank you for your business!', { align: 'center' });
 
-    // Finalize PDF
     doc.end();
 
     return {
@@ -48,11 +39,6 @@ export const generateInvoice = async (payment) => {
   }
 };
 
-/**
- * Generates invoice data from a booking
- * @param {Object} booking - The booking object with populated references
- * @returns {Object} Formatted invoice data
- */
 export const createInvoiceData = (booking) => {
   if (!booking) {
     throw new Error('Booking is required to generate invoice');

@@ -7,7 +7,8 @@ import {
   handleVerification,
   getAllProviders,
   updateProviderStatus,
-  getProviderStats 
+  getProviderStats,
+  getAllUsers 
 } from '../../controllers/admin/admin.controller.js';
 import { getAdminStats } from '../../controllers/admin/stats.controller.js';
 
@@ -17,7 +18,7 @@ router.use(authenticateUser);
 router.use(authorizeRoles('admin'));
 
 // Fix provider routes
-router.get('/providers/list', getAllProviders);
+router.get('/providers/list', getAllUsers);
 router.get('/providers/stats', getProviderStats);
 router.get('/providers/:providerId', getProviderDetails);
 router.put('/providers/:providerId/status', updateProviderStatus);

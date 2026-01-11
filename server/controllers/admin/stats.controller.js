@@ -46,16 +46,16 @@ export const getAdminStats = async (req, res) => {
         .lean()
         .then(bookings => bookings.map(booking => {
           let description = '';
-          
-          switch(booking.status) {
+
+          switch (booking.status) {
             case 'pending':
               description = `New booking request from ${booking.client?.name || 'Unknown Client'} for ${booking.service?.title}`;
               break;
             case 'confirmed':
-              description = `Booking confirmed with ${booking.provider?.name} for ${booking.service?.title}`;
+              description = `Booking confirmed with ${booking.provider?.name || 'Unknown Provider'} for ${booking.service?.title}`;
               break;
             case 'completed':
-              description = `Service completed by ${booking.provider?.name} for ${booking.client?.name}`;
+              description = `Service completed by ${booking.provider?.name || 'Unknown Provider'} for ${booking.client?.name || 'Unknown Client'}`;
               break;
             case 'cancelled':
               description = `Booking cancelled for ${booking.service?.title}`;
@@ -68,18 +68,19 @@ export const getAdminStats = async (req, res) => {
           }
 
           return {
+            id: booking._id,
             description,
             timestamp: booking.updatedAt || booking.createdAt,
             status: booking.status,
             amount: booking.totalAmount,
-            id: booking._id
+            clientName: booking.client?.name || 'Unknown Client'
           };
         }))
     ]);
 
     res.json({
       totalUsers,
-      activeProviders, 
+      activeProviders,
       pendingVerifications,
       totalRevenue,
       recentActivities
@@ -87,10 +88,10 @@ export const getAdminStats = async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching admin stats:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       message: 'Error fetching admin statistics',
-      error: error.message 
+      error: error.message
     });
   }
 };

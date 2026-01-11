@@ -10,7 +10,14 @@ export const VALID_BOOKING_STATUSES = {
   CANCELLED: 'cancelled'
 };
 
-const bookingSchema = new mongoose.Schema({
+const RatingSchema = new mongoose.Schema({
+  score: { type: Number, min: 1, max: 5 },
+  comment: { type: String },
+  reviewer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const BookingSchema = new mongoose.Schema({
   service: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service',
@@ -50,11 +57,7 @@ const bookingSchema = new mongoose.Schema({
     paidAt: Date
   },
   notes: String,
-  rating: {
-    score: Number,
-    review: String,
-    createdAt: Date
-  },
+  rating: { type: RatingSchema, default: null },
   quote: {
     price: Number,
     estimatedHours: Number,
@@ -87,7 +90,7 @@ const bookingSchema = new mongoose.Schema({
 });
 
 // Virtual field for booking duration (in days)
-bookingSchema.virtual('duration').get(function() {
+BookingSchema.virtual('duration').get(function() {
   if (!this.completedAt) return null;
   
   const startDate = new Date(this.scheduledDate);
@@ -100,12 +103,12 @@ bookingSchema.virtual('duration').get(function() {
 });
 
 // Method to check if booking is paid
-bookingSchema.methods.isPaid = function() {
+BookingSchema.methods.isPaid = function() {
   return this.payment && this.payment.status === 'paid';
 };
 
 // Method to get current status with timestamp
-bookingSchema.methods.getCurrentStatus = function() {
+BookingSchema.methods.getCurrentStatus = function() {
   if (!this.tracking || this.tracking.length === 0) {
     return {
       status: this.status,
@@ -125,7 +128,7 @@ bookingSchema.methods.getCurrentStatus = function() {
 };
 
 // Add method to handle quote responses
-bookingSchema.methods.handleQuoteResponse = async function(approved, userId) {
+BookingSchema.methods.handleQuoteResponse = async function(approved, userId) {
   this.quote.approved = approved;
   this.quote.respondedAt = new Date();
   this.status = approved ? 'confirmed' : 'declined';
@@ -142,7 +145,7 @@ bookingSchema.methods.handleQuoteResponse = async function(approved, userId) {
 };
 
 // Add method to handle quote update
-bookingSchema.methods.updateQuote = async function(quoteData, providerId) {
+BookingSchema.methods.updateQuote = async function(quoteData, providerId) {
   this.quote = {
     ...quoteData,
     submittedAt: new Date(),
@@ -162,11 +165,11 @@ bookingSchema.methods.updateQuote = async function(quoteData, providerId) {
 };
 
 // Include virtuals when converting to JSON
-bookingSchema.set('toJSON', { virtuals: true });
-bookingSchema.set('toObject', { virtuals: true });
+BookingSchema.set('toJSON', { virtuals: true });
+BookingSchema.set('toObject', { virtuals: true });
 
 // Add a pre-save middleware to track status changes
-bookingSchema.pre('save', function(next) {
+BookingSchema.pre('save', function(next) {
   if (this.isModified('status')) {
     if (!Object.values(VALID_BOOKING_STATUSES).includes(this.status)) {
       next(new Error(`Invalid status value: ${this.status}`));
@@ -182,5 +185,5 @@ bookingSchema.pre('save', function(next) {
   next();
 });
 
-const Booking = mongoose.model('Booking', bookingSchema);
+const Booking = mongoose.model('Booking', BookingSchema);
 export default Booking;

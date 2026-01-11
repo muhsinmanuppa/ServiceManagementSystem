@@ -110,7 +110,6 @@ const ServiceManagement = () => {
     }
   };
 
-  // Filter services based on search term, status, and category
   const filteredServices = services.filter(service => {
     const matchesSearch = !searchTerm || 
       service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -299,7 +298,6 @@ const ServiceManagement = () => {
         </div>
       )}
       
-      {/* Rejection Modal */}
       {showRejectionModal && (
         <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog">

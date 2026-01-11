@@ -22,7 +22,6 @@ const RequestQuoteModal = ({ service, onClose }) => {
 
   const handleFileChange = (e) => {
     if (e.target.files) {
-      // Convert FileList to array and limit to 5 files
       const fileArray = Array.from(e.target.files).slice(0, 5);
       setAttachments(fileArray);
     }

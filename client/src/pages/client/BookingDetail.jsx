@@ -7,7 +7,7 @@ import {
   processPayment, 
   selectBookingById, 
   handleQuoteResponse,
-  BOOKING_STATUS  // Add this import
+  BOOKING_STATUS  
 } from '../../store/slices/bookingSlice';
 import api from '../../utils/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -29,26 +29,30 @@ const BookingDetail = () => {
 
   const defaultImageUrl = 'https://placehold.co/100x100/eee/999?text=Service';
 
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+
   useEffect(() => {
     const fetchBookingDetails = async () => {
       try {
         setLoading(true);
         console.log('Fetching booking details for ID:', id);
-        
-        // Update endpoint to match client routes
+
         const response = await api.get(`/client/bookings/${id}`);
-        console.log('Booking response:', response);
-        
-        if (!response.data) {
-          throw new Error('No data received');
+        console.log('Booking response (raw):', response);
+
+        const data = response.data;
+        const bookingPayload = data?.booking ?? data;
+        if (!bookingPayload) {
+          throw new Error('No booking data received from server');
         }
-        
-        setBooking(response.data);
+
+        setBooking(bookingPayload);
         setError(null);
       } catch (error) {
-        console.error('Error fetching booking:', error);
+        console.error('Error fetching booking:', error, error.response?.data);
         setError('Failed to fetch booking details');
-        dispatch(showNotification({ type: 'error', message: 'Failed to fetch booking details' }));
+        dispatch(showNotification({ type: 'error', message: error.response?.data?.message || 'Failed to fetch booking details' }));
       } finally {
         setLoading(false);
       }
@@ -59,7 +63,6 @@ const BookingDetail = () => {
     }
   }, [id, dispatch]);
 
-  // Add debugging for when booking changes
   useEffect(() => {
     console.log('Current booking state:', booking);
   }, [booking]);
@@ -72,12 +75,49 @@ const BookingDetail = () => {
 
   const handleSubmitReview = async (reviewData) => {
     try {
-      const result = await dispatch(addReview({ bookingId: id, reviewData })).unwrap();
-      setBooking(result.booking);
+      if (!booking) {
+        throw new Error('Booking not loaded');
+      }
+      if (booking.status !== 'completed') {
+        throw new Error('Booking is not completed and cannot be reviewed');
+      }
+      if (!reviewData.rating || !reviewData.comment.trim()) {
+        throw new Error('Please provide both rating and comment');
+      }
+
+      console.log('Submitting review', { bookingId: id, reviewData });
+
+      const result = await dispatch(addReview({
+        bookingId: id,
+        reviewData: {
+          rating: Number(reviewData.rating),
+          comment: reviewData.comment.trim()
+        }
+      })).unwrap();
+
+      console.log('addReview result:', result);
+
+      const updatedBooking = result?.booking ?? result;
+      if (updatedBooking) {
+        setBooking(updatedBooking);
+      }
+
       setShowReviewForm(false);
-      dispatch(showNotification({ type: 'success', message: 'Review submitted successfully' }));
+      setRating(0);
+      setComment('');
+
+      dispatch(showNotification({
+        type: 'success',
+        message: 'Review submitted successfully'
+      }));
     } catch (error) {
-      dispatch(showNotification({ type: 'error', message: error.message || 'Failed to submit review' }));
+      console.error('Review submit error:', error, error?.payload ?? error.response?.data);
+      const serverMessage =
+        error?.payload?.message ||
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to submit review';
+      dispatch(showNotification({ type: 'error', message: serverMessage }));
     }
   };
 
@@ -111,7 +151,6 @@ const BookingDetail = () => {
             });
 
             if (verifyResponse.data.success) {
-              // Fetch updated booking details after payment
               const updatedBookingResponse = await api.get(`/client/bookings/${booking._id}`);
               setBooking(updatedBookingResponse.data);
               
@@ -161,50 +200,46 @@ const BookingDetail = () => {
     }
   };
 
-  const canShowPaymentButton = () => {
+  // const canShowPaymentButton = () => {
+  //   return (
+  //     booking.status === BOOKING_STATUS.QUOTED && 
+  //     (!booking.payment || booking.payment.status !== 'paid') &&
+  //     !isProcessingPayment
+  //   );
+  // };
+
+const canShowPaymentButton = () => {
+  const paymentStatus = booking?.payment?.status;
+
+  return (
+    paymentStatus !== 'paid' && 
+    (
+      booking.status !== BOOKING_STATUS.PENDING ||
+      paymentStatus === 'pending'
+    ) &&
+    !isProcessingPayment
+  );
+};
+
+
+
+  const canSubmitReview = () => {
+    const paymentStatus = String(booking?.payment?.status || '').toLowerCase();
+    const paidLike = ['paid', 'completed', 'success'].includes(paymentStatus);
+    // allow submit OR update when booking is completed and payment is okay
     return (
-      booking.status === BOOKING_STATUS.QUOTED && 
-      (!booking.payment || booking.payment.status !== 'paid') &&
-      !isProcessingPayment
+      booking?.status === 'completed' &&
+      paidLike
     );
   };
 
-  // const handleQuoteResponse = async (approved) => {
-  //   try {
-  //     const result = await dispatch(handleQuoteResponse({
-  //       bookingId: id,
-  //       approved,
-  //       status: approved ? BOOKING_STATUS.QUOTED : BOOKING_STATUS.CANCELLED
-  //     })).unwrap();
-      
-  //     setBooking(result.booking);
-      
-  //     if (approved) {
-  //       // Show payment button after quote acceptance
-  //       dispatch(showNotification({
-  //         type: 'success',
-  //         message: 'Quote accepted. Please proceed with payment.'
-  //       }));
-  //     } else {
-  //       dispatch(showNotification({
-  //         type: 'info',
-  //         message: 'Quote declined'
-  //       }));
-  //     }
-  //   } catch (error) {
-  //     dispatch(showNotification({
-  //       type: 'error',
-  //       message: error.message || 'Failed to respond to quote'
-  //     }));
-  //   }
-  // };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div className="alert alert-danger">{error}</div>;
   if (!booking) return <div className="alert alert-warning">Booking not found</div>;
 
   const showPaymentOption = booking?.status === 'pending' && booking?.payment?.status === 'pending';
-  const showReviewOption = booking?.status === 'completed' && !booking?.rating;
+  const showReviewOption = () => canSubmitReview();
 
   return (
     <div className="container-fluid px-4">
@@ -325,22 +360,7 @@ const BookingDetail = () => {
         </div>
         <div className="card-footer d-flex justify-content-between align-items-center">
           <div className="d-flex gap-2">
-            {/* {booking.status === BOOKING_STATUS.PENDING && booking.quote && (
-              <>
-                <button
-                  className="btn btn-success"
-                  onClick={() => handleQuoteResponse(true)}
-                >
-                  Accept Quote
-                </button>
-                <button
-                  className="btn btn-danger"
-                  onClick={() => handleQuoteResponse(false)}
-                >
-                  Decline Quote
-                </button>
-              </>
-            )} */}
+
 
             {canShowPaymentButton() && (
               <button 
@@ -361,12 +381,16 @@ const BookingDetail = () => {
               </button>
             )}
 
-            {booking.status === 'completed' && !booking.rating && (
+            {canSubmitReview() && (
               <button 
                 className="btn btn-primary"
-                onClick={() => setShowReviewForm(true)}
+                onClick={() => {
+                  setRating(Number(booking.rating?.score ?? 0)); 
+                  setComment(booking.rating?.comment ?? booking.rating?.review ?? '');
+                  setShowReviewForm(true);
+                }}
               >
-                Add Review
+                {booking.rating ? 'Edit Review' : 'Add Review'}
               </button>
             )}
           </div>
@@ -395,34 +419,66 @@ const BookingDetail = () => {
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Add Review</h5>
-                <button type="button" className="btn-close" onClick={() => setShowReviewForm(false)}></button>
+                <h5 className="modal-title">{booking.rating ? 'Update Review' : 'Add Review'}</h5>
+                <button type="button" className="btn-close" onClick={() => {
+                  setShowReviewForm(false);
+                  setRating(0);
+                  setComment('');
+                }}></button>
               </div>
               <div className="modal-body">
                 <form onSubmit={(e) => {
                   e.preventDefault();
-                  const rating = e.target.rating.value;
-                  const comment = e.target.comment.value;
-                  handleSubmitReview({ rating, comment });
+                  handleSubmitReview({ 
+                    rating: parseInt(rating), 
+                    comment 
+                  });
                 }}>
                   <div className="mb-3">
                     <label className="form-label">Rating</label>
-                    <select name="rating" className="form-select" required>
-                      <option value="">Select rating</option>
-                      <option value="5">5 - Excellent</option>
-                      <option value="4">4 - Very Good</option>
-                      <option value="3">3 - Good</option>
-                      <option value="2">2 - Fair</option>
-                      <option value="1">1 - Poor</option>
-                    </select>
+                    <div className="star-rating">
+                      <RatingStars
+                        rating={Number(rating) || 0}
+                        onRatingChange={(r) => setRating(Number(r))}
+                        readonly={false}
+                        size="md"
+                      />
+                    </div>
                   </div>
                   <div className="mb-3">
                     <label className="form-label">Comments</label>
-                    <textarea name="comment" className="form-control" rows="3" required></textarea>
+                    <textarea 
+                      className="form-control" 
+                      rows="3" 
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      required
+                      minLength={10}
+                      maxLength={500}
+                    ></textarea>
+                    <small className="text-muted">
+                      {comment.length}/500 characters
+                    </small>
                   </div>
                   <div className="d-flex justify-content-end">
-                    <button type="button" className="btn btn-secondary me-2" onClick={() => setShowReviewForm(false)}>Cancel</button>
-                    <button type="submit" className="btn btn-primary">Submit Review</button>
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary me-2" 
+                      onClick={() => {
+                        setShowReviewForm(false);
+                        setRating(0);
+                        setComment('');
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary"
+                      disabled={!rating || !comment.trim()}
+                    >
+                      {booking.rating ? 'Update Review' : 'Submit Review'}
+                    </button>
                   </div>
                 </form>
               </div>

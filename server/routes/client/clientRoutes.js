@@ -1,22 +1,23 @@
 import express from 'express';
 import { authenticateUser, authorizeRoles } from '../../middleware/auth.middleware.js';
-import { 
-  getBookingById, 
-  getClientBookings, 
+import {
+  getBookingById,
+  getClientBookings,
   createBooking,
   addReview,
   handleQuoteResponse,
   cancelBooking
 } from '../../controllers/booking.controller.js';
-import Booking from '../../models/Booking.js'; // Add this import
+import { addReviewForBooking } from '../../controllers/review.controller.js'; // ✅ ESM import
+import Booking from '../../models/Booking.js';
 
 const router = express.Router();
 
-// Protect all client routes
+// ✅ Protect all client routes
 router.use(authenticateUser);
 router.use(authorizeRoles('client'));
 
-// Add debug logging middleware
+// ✅ Debug logging middleware
 router.use((req, res, next) => {
   console.log('Client Route Request:', {
     method: req.method,
@@ -28,64 +29,49 @@ router.use((req, res, next) => {
   next();
 });
 
+// ✅ Stats route
 router.get('/stats', async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Get active bookings (pending, confirmed, in_progress)
     const activeBookings = await Booking.countDocuments({
       client: userId,
       status: { $in: ['pending', 'confirmed', 'in_progress'] }
     });
 
-    // Get completed services
     const completedServices = await Booking.countDocuments({
       client: userId,
       status: 'completed'
     });
 
-    // Get total services
     const totalServices = await Booking.countDocuments({
       client: userId
     });
 
-    const stats = {
-      activeBookings,
-      completedServices,
-      totalServices
-    };
-    
-    res.json({
-      success: true,
-      stats
-    });
+    const stats = { activeBookings, completedServices, totalServices };
+
+    res.json({ success: true, stats });
   } catch (error) {
     console.error('Error fetching client stats:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Error fetching statistics',
-      error: error.message  // Add error message for debugging
+      error: error.message
     });
   }
 });
 
-// Booking routes consolidated here
+// ✅ Booking routes
 router.get('/bookings', getClientBookings);
 router.get('/bookings/:id', getBookingById);
 router.post('/bookings', createBooking);
-router.post('/bookings/:id/review', async (req, res, next) => {
-  try {
-    console.log('Review request:', {
-      bookingId: req.params.id,
-      body: req.body,
-      user: req.user._id
-    });
-    await addReview(req, res);
-  } catch (error) {
-    next(error);
-  }
+router.post('/bookings/:id/review', (req, res, next) => {
+  // normalize param name expected by the controller
+  req.params.bookingId = req.params.id;
+  return addReviewForBooking(req, res, next);
 });
 router.post('/bookings/:id/quote-response', handleQuoteResponse);
 router.post('/bookings/:id/cancel', cancelBooking);
 
+// ✅ ESM export
 export { router as clientRoutes };

@@ -10,7 +10,7 @@ const store = configureStore({
     auth: authReducer,
     notification: notificationReducer,
     payment: paymentReducer,
-    booking: bookingReducer,  // Ensure this is properly included
+    booking: bookingReducer,  
     socket: socketReducer
   },
   middleware: (getDefaultMiddleware) =>
@@ -19,7 +19,7 @@ const store = configureStore({
     })
 });
 
-// Add this for debugging
+// debugging
 if (process.env.NODE_ENV === 'development') {
   console.log('Redux store initialized with reducers:', 
     Object.keys(store.getState()).join(', '));

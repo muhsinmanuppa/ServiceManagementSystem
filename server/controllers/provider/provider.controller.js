@@ -27,11 +27,9 @@ export const applyForVerification = async (req, res) => {
       return res.status(400).json({ message: 'Business description is required' });
     }
 
-    // Create unique filename with original extension
     const fileExt = req.file.originalname.split('.').pop().toLowerCase();
     const uniqueFilename = `verification_${user._id}_${Date.now()}`;
 
-    // Upload to specific folder with better organization
     const result = await uploadToCloudinary(req.file.buffer, {
       folder: 'verification_documents',
       public_id: uniqueFilename,
@@ -140,7 +138,6 @@ export const getProviderStats = async (req, res) => {
   try {
     const providerId = req.user._id;
 
-    // Simple queries without aggregation first
     const [activeCount, completedCount, earnings] = await Promise.all([
       // Active bookings count
       Booking.countDocuments({

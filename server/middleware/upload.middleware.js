@@ -83,7 +83,7 @@ export const uploadServiceImage = multer({
   limits: { 
     fileSize: 10 * 1024 * 1024 // 10MB limit
   }
-}).single("image"); // Changed to 'image' to match the frontend
+}).single("image"); 
 
 // Configure multer for provider verification
 export const verificationUpload = multer({

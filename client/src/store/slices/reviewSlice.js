@@ -68,7 +68,6 @@ export const fetchUserReviews = createAsyncThunk(
   }
 );
 
-// Mark a review as helpful
 export const markReviewHelpful = createAsyncThunk(
   'reviews/markHelpful',
   async (reviewId, { rejectWithValue }) => {
@@ -109,7 +108,6 @@ const reviewSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Handle fetchServiceReviews
       .addCase(fetchServiceReviews.pending, (state) => {
         state.serviceReviews.status = 'loading';
       })
@@ -124,12 +122,10 @@ const reviewSlice = createSlice({
         state.serviceReviews.error = action.payload?.message || 'Failed to fetch reviews';
       })
       
-      // Handle createReview
       .addCase(createReview.fulfilled, (state, action) => {
         state.serviceReviews.items.unshift(action.payload.review);
       })
       
-      // Handle updateReview
       .addCase(updateReview.fulfilled, (state, action) => {
         const index = state.serviceReviews.items.findIndex(
           item => item._id === action.payload.review._id
@@ -138,7 +134,6 @@ const reviewSlice = createSlice({
           state.serviceReviews.items[index] = action.payload.review;
         }
         
-        // Also update in userReviews if exists
         const userIndex = state.userReviews.items.findIndex(
           item => item._id === action.payload.review._id
         );
@@ -147,20 +142,16 @@ const reviewSlice = createSlice({
         }
       })
       
-      // Handle deleteReview
       .addCase(deleteReview.fulfilled, (state, action) => {
-        // Remove from serviceReviews
         state.serviceReviews.items = state.serviceReviews.items.filter(
           item => item._id !== action.payload.reviewId
         );
         
-        // Remove from userReviews
         state.userReviews.items = state.userReviews.items.filter(
           item => item._id !== action.payload.reviewId
         );
       })
       
-      // Handle fetchUserReviews
       .addCase(fetchUserReviews.pending, (state) => {
         state.userReviews.status = 'loading';
       })
@@ -173,11 +164,9 @@ const reviewSlice = createSlice({
         state.userReviews.error = action.payload?.message || 'Failed to fetch user reviews';
       })
       
-      // Handle markReviewHelpful
       .addCase(markReviewHelpful.fulfilled, (state, action) => {
         const { reviewId, helpfulCount } = action.payload;
         
-        // Update in serviceReviews
         const index = state.serviceReviews.items.findIndex(item => item._id === reviewId);
         if (index !== -1) {
           state.serviceReviews.items[index].helpfulCount = helpfulCount;

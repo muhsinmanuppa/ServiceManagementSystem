@@ -8,7 +8,6 @@ const CategoryList = ({ onSelectCategory, selectedCategory }) => {
   const { items: categories, status, error } = useSelector(state => state.categories);
   
   useEffect(() => {
-    // Only fetch if we don't already have categories
     if (status === 'idle') {
       dispatch(fetchCategories());
     }

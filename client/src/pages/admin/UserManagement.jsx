@@ -38,7 +38,6 @@ const UserManagement = () => {
   const handleStatusChange = async (userId, newStatus) => {
     try {
       
-      // Update the user in the local state
       setUsers(users.map(user => 
         user._id === userId ? { ...user, status: newStatus } : user
       ));
@@ -65,7 +64,6 @@ const UserManagement = () => {
     try {
       await api.put(`/admin/users/${userId}/verify`);
       
-      // Update user in the local state
       setUsers(users.map(user => 
         user._id === userId ? { ...user, verified: true } : user
       ));
@@ -90,7 +88,6 @@ const UserManagement = () => {
     try {
       await api.delete(`/admin/users/${userId}`);
       
-      // Remove user from the local state
       setUsers(users.filter(user => user._id !== userId));
       
       dispatch(showNotification({
@@ -105,7 +102,6 @@ const UserManagement = () => {
     }
   };
 
-  // Filter users based on search, role, and status
   const filteredUsers = users.filter(user => {
     const matchesSearch = !searchTerm || 
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -288,7 +284,6 @@ const UserManagement = () => {
         </div>
       </div>
 
-      {/* User Modal */}
       {showModal && selectedUser && (
         <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg">

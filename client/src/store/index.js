@@ -13,20 +13,17 @@ export const store = configureStore({
     service: serviceReducer,
     notification: notificationReducer,
     socket: socketReducer,
-    booking: bookingReducer, // Make sure this is named 'booking' to match selectors
-    category: categoryReducer, // Make sure this matches the slice name
-    payment: paymentReducer, // Add this line if it's missing
+    booking: bookingReducer, 
+    category: categoryReducer, 
+    payment: paymentReducer, 
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore these action types for serializability checks
         ignoredActions: ['socket/initialize/fulfilled'],
-        // Ignore these field paths for serializability checks
         ignoredPaths: ['socket.socket'],
       },
     }),
 });
 
-// Export store as default for easy importing
 export default store;

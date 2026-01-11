@@ -77,8 +77,5 @@ export const authorizeRoles = (allowedRoles) => {
   };
 };
 
-// For backward compatibility, also export as authorize
 export const authorize = authorizeRoles;
-
-// Export both for flexibility
 export default { authenticateUser, authorizeRoles, authorize };

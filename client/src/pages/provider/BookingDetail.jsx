@@ -39,7 +39,6 @@ const BookingDetail = () => {
   }, [id]);
 
   useEffect(() => {
-    // Auto-start service when payment is completed
     if (booking?.status === BOOKING_STATUS.QUOTED && 
         booking?.payment?.status === 'paid') {
       handleStatusUpdate(BOOKING_STATUS.IN_PROGRESS);
@@ -115,7 +114,6 @@ const BookingDetail = () => {
         </button>
       </div>
 
-      {/* Add Client Details Card */}
       <div className="row mb-4">
         <div className="col-md-6">
           <div className="card h-100">
@@ -143,7 +141,6 @@ const BookingDetail = () => {
           </div>
         </div>
 
-        {/* Add Service Status Card */}
         <div className="col-md-6">
           <div className="card h-100">
             <div className="card-header">
@@ -183,7 +180,6 @@ const BookingDetail = () => {
         </div>
       </div>
 
-      {/* Add some CSS for the timeline */}
       <style>{`
         .timeline-marker {
           width: 12px;
@@ -238,14 +234,12 @@ const BookingDetail = () => {
         </div>
       </div>
 
-      {/* Add modals */}
       <InvoiceView 
         show={showInvoice}
         onHide={() => setShowInvoice(false)}
         booking={booking}
       />
 
-      {/* Add Quote Modal */}
       {showQuoteModal && (
         <div className="modal fade show" style={{ display: 'block' }}>
           <div className="modal-dialog">

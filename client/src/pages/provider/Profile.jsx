@@ -33,12 +33,13 @@ const Profile = () => {
     description: user?.description || '',
   });
   const [showVerificationForm, setShowVerificationForm] = useState(true);
+  const [verificationDocument, setVerificationDocument] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/profiles/provider'); // Use new consistent endpoint
+        const response = await api.get('/profiles/provider');
         
         if (response.data.success && response.data.user) {
           setProfile(prev => ({
@@ -86,7 +87,27 @@ const Profile = () => {
     e.preventDefault();
     try {
       setSaving(true);
-      const response = await api.put('/profiles/provider', profile); // Use new consistent endpoint
+      
+      let response;
+      if (verificationDocument) {
+        const formDataToSend = new FormData();
+        
+        Object.keys(profile).forEach(key => {
+          if (profile[key] !== null && profile[key] !== undefined) {
+            formDataToSend.append(key, profile[key]);
+          }
+        });
+        
+        formDataToSend.append('verificationDocument', verificationDocument);
+        
+        response = await api.put('/profiles/provider', formDataToSend, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        response = await api.put('/profiles/provider', profile);
+      }
       
       if (response.data.success) {
         dispatch(showNotification({
@@ -95,6 +116,7 @@ const Profile = () => {
         }));
         
         dispatch(updateUser(response.data.user));
+        setVerificationDocument(null); 
       }
     } catch (error) {
       console.error('Profile update error:', error);
@@ -170,6 +192,24 @@ const Profile = () => {
     }
     
     setFiles(selectedFiles);
+  };
+
+  const handleVerificationDocumentChange = (e) => {
+    const selectedFile = e.target.files[0];
+    
+    if (selectedFile) {
+      const validation = validateFileTypes([selectedFile]);
+      if (!validation.valid) {
+        dispatch(showNotification({
+          type: 'error',
+          message: `Invalid file type. Only images, PDF, and Word documents are allowed.`
+        }));
+        e.target.value = '';
+        setVerificationDocument(null);
+        return;
+      }
+      setVerificationDocument(selectedFile);
+    }
   };
 
   const handleVerificationSubmit = async (e) => {
@@ -338,6 +378,29 @@ const Profile = () => {
                   placeholder="Tell clients about yourself and your business experience..."
                 ></textarea>
               </div>
+
+              {/* <div className="mb-3">
+                <label className="form-label">Upload Verification Document (Optional)</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleVerificationDocumentChange}
+                  accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+                />
+                <small className="text-muted d-block mt-1">
+                  Upload business registration or ID proof document for verification
+                </small>
+                <small className="text-muted d-block">
+                  Allowed file types: Images (.jpg, .png), PDF (.pdf), Word (.doc, .docx)
+                </small>
+                {verificationDocument && (
+                  <div className="mt-2">
+                    <small className="text-success">
+                      ✓ Selected: {verificationDocument.name}
+                    </small>
+                  </div>
+                )}
+              </div> */}
               
               <button type="submit" className="btn btn-primary" disabled={saving}>
                 {saving ? 'Saving...' : 'Save Changes'}

@@ -6,14 +6,12 @@ const AuthGuard = ({ allowedRoles, children }) => {
   const { user, isAuthenticated } = useSelector(state => state.auth);
   const location = useLocation();
 
-  // Add profile path check
   const isProfilePath = location.pathname.includes('/profile');
   
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} />;
   }
 
-  // Allow users to access their own profile based on role
   if (isProfilePath) {
     const correctPath = `/${user.role}/profile`;
     if (location.pathname !== correctPath) {

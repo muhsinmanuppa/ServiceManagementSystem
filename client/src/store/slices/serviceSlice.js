@@ -53,12 +53,10 @@ export const createService = createAsyncThunk(
 
       console.log('Service creation response:', response.data);
 
-      // Validate API response structure
       if (!response.data || typeof response.data !== 'object') {
         throw new Error('Invalid API response');
       }
 
-      // Check if service data is returned
       if (!response.data.service) {
         return rejectWithValue(response.data.message || 'Service data missing in response');
       }
@@ -113,7 +111,6 @@ const serviceSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Fetch services cases
       .addCase(fetchServices.pending, (state) => {
         state.status = 'loading';
       })
@@ -128,7 +125,6 @@ const serviceSlice = createSlice({
         state.error = action.error.message;
       })
 
-      // Fetch provider services
       .addCase(fetchProviderServices.pending, (state) => {
         state.loading = true;
       })
@@ -146,7 +142,6 @@ const serviceSlice = createSlice({
       .addCase(createService.fulfilled, (state, action) => {
         const newService = action.payload?.service || action.payload;
         
-        // Ensure services and items are always arrays
         if (!Array.isArray(state.services)) state.services = [];
         if (!Array.isArray(state.items)) state.items = [];
       
@@ -183,7 +178,6 @@ const serviceSlice = createSlice({
   }
 });
 
-// Add selectors
 export const selectServices = (state) => state.services.items;
 export const selectServicesStatus = (state) => state.services.status;
 export const selectServicesError = (state) => state.services.error;

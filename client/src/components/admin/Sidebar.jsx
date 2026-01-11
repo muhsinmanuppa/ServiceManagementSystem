@@ -5,7 +5,6 @@ const AdminSidebar = () => {
   const location = useLocation();
   const { user } = useSelector(state => state.auth);
 
-  // Check if the current path matches or starts with the menu item path
   const isActive = (path) => {
     if (path === '/admin') {
       return location.pathname === path;
@@ -15,13 +14,10 @@ const AdminSidebar = () => {
 
   const menuItems = [
     { path: '/admin', icon: 'bi-speedometer2', label: 'Dashboard' },
-    { path: '/admin/list', icon: 'bi-people', label: 'Providers', badge: { type: 'info', content: 'New' } },
-    { path: '/admin/provider-verifications', icon: 'bi-shield-check', label: 'Verifications' }
+    { path: '/admin/list', icon: 'bi-people', label: 'Users' },
+    { path: '/admin/provider-verifications', icon: 'bi-shield-check', label: 'Provider Verifications' }
     ,
-    // { path: '/admin/users', icon: 'bi-person', label: 'Users' },
     { path: '/admin/categories', icon: 'bi-grid', label: 'Categories' }
-    // ,
-    // { path: '/admin/analytics', icon: 'bi-graph-up', label: 'Analytics' }
   ];
 
   return (

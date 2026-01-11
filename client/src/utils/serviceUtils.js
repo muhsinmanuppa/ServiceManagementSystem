@@ -1,9 +1,4 @@
-/**
- * Format price with Indian Rupee symbol
- * @param {number} price - The price to format
- * @param {boolean} showSymbol - Whether to include the ₹ symbol
- * @returns {string} - Formatted price
- */
+
 export const formatPrice = (price, showSymbol = true) => {
   if (price === undefined || price === null) {
     return showSymbol ? '₹0' : '0';
@@ -40,11 +35,7 @@ export const filterServices = (services, filters) => {
   });
 };
 
-/**
- * Generate star rating display
- * @param {number} rating - Rating value (0-5)
- * @returns {string} - HTML string with star icons
- */
+
 export const generateStarRating = (rating) => {
   if (!rating) rating = 0;
   
@@ -54,17 +45,14 @@ export const generateStarRating = (rating) => {
   
   let stars = '';
   
-  // Add full stars
   for (let i = 0; i < fullStars; i++) {
     stars += '<i class="bi bi-star-fill text-warning"></i>';
   }
   
-  // Add half star if needed
   if (halfStar) {
     stars += '<i class="bi bi-star-half text-warning"></i>';
   }
   
-  // Add empty stars
   for (let i = 0; i < emptyStars; i++) {
     stars += '<i class="bi bi-star text-warning"></i>';
   }
@@ -72,11 +60,6 @@ export const generateStarRating = (rating) => {
   return stars;
 };
 
-/**
- * Calculate time since a given date
- * @param {string|Date} date - Date to calculate from
- * @returns {string} - Human readable time difference
- */
 export const timeSince = (date) => {
   const now = new Date();
   const pastDate = new Date(date);
@@ -111,12 +94,6 @@ export const timeSince = (date) => {
   return 'Just now';
 };
 
-/**
- * Format date for display
- * @param {string|Date} date - Date to format
- * @param {string} format - Format type ('short', 'long', 'datetime')
- * @returns {string} - Formatted date string
- */
 export const formatDate = (date, format = 'short') => {
   if (!date) return '';
   

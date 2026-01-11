@@ -1,21 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../utils/api';
 
-// Create a new request
 export const createRequest = createAsyncThunk(
   'requests/createRequest',
   async (requestData, { rejectWithValue }) => {
     try {
       const formData = new FormData();
       
-      // Add all request data to formData
       Object.keys(requestData).forEach(key => {
         if (key !== 'attachments') {
           formData.append(key, requestData[key]);
         }
       });
       
-      // Add attachments if present
       if (requestData.attachments && requestData.attachments.length) {
         requestData.attachments.forEach(file => {
           formData.append('attachments', file);
@@ -30,7 +27,6 @@ export const createRequest = createAsyncThunk(
   }
 );
 
-// Fetch requests (client or provider)
 export const fetchRequests = createAsyncThunk(
   'requests/fetchRequests',
   async (userType, { rejectWithValue }) => {
@@ -43,7 +39,6 @@ export const fetchRequests = createAsyncThunk(
   }
 );
 
-// Fetch a specific request by ID
 export const fetchRequestById = createAsyncThunk(
   'requests/fetchRequestById',
   async (requestId, { rejectWithValue }) => {
@@ -56,7 +51,6 @@ export const fetchRequestById = createAsyncThunk(
   }
 );
 
-// Update request status
 export const updateRequestStatus = createAsyncThunk(
   'requests/updateStatus',
   async ({ requestId, status, quoteDetails = null }, { rejectWithValue }) => {
@@ -74,7 +68,6 @@ export const updateRequestStatus = createAsyncThunk(
   }
 );
 
-// Add a message to a request
 export const addMessageToRequest = createAsyncThunk(
   'requests/addMessage',
   async ({ requestId, message }, { rejectWithValue }) => {
@@ -104,7 +97,7 @@ const requestSlice = createSlice({
   initialState: {
     items: [],
     currentRequest: null,
-    status: 'idle', // 'idle', 'loading', 'succeeded', 'failed'
+    status: 'idle', 
     error: null,
     loading: false,
     actionLoading: false
@@ -119,7 +112,6 @@ const requestSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Handle createRequest
       .addCase(createRequest.pending, (state) => {
         state.status = 'loading';
       })
@@ -133,7 +125,6 @@ const requestSlice = createSlice({
         state.error = action.payload?.message || 'Failed to create request';
       })
       
-      // Handle fetchRequests
       .addCase(fetchRequests.pending, (state) => {
         state.status = 'loading';
       })
@@ -146,7 +137,6 @@ const requestSlice = createSlice({
         state.error = action.payload?.message || 'Failed to fetch requests';
       })
       
-      // Handle fetchRequestById
       .addCase(fetchRequestById.pending, (state) => {
         state.status = 'loading';
       })
@@ -159,7 +149,6 @@ const requestSlice = createSlice({
         state.error = action.payload?.message || 'Failed to fetch request details';
       })
       
-      // Handle updateRequestStatus
       .addCase(updateRequestStatus.pending, (state) => {
         state.actionLoading = true;
         state.error = null;
@@ -168,13 +157,11 @@ const requestSlice = createSlice({
         state.actionLoading = false;
         const updatedRequest = action.payload.request;
         
-        // Update in items array
         const index = state.items.findIndex(item => item._id === updatedRequest._id);
         if (index !== -1) {
           state.items[index] = updatedRequest;
         }
         
-        // Update current request if it's the same one
         if (state.currentRequest && state.currentRequest._id === updatedRequest._id) {
           state.currentRequest = updatedRequest;
         }
@@ -184,23 +171,19 @@ const requestSlice = createSlice({
         state.error = action.payload || { message: 'Failed to update request' };
       })
       
-      // Handle addMessageToRequest
       .addCase(addMessageToRequest.fulfilled, (state, action) => {
         const updatedRequest = action.payload.request;
         
-        // Update in items array
         const index = state.items.findIndex(item => item._id === updatedRequest._id);
         if (index !== -1) {
           state.items[index] = updatedRequest;
         }
         
-        // Update current request if it's the same one
         if (state.currentRequest && state.currentRequest._id === updatedRequest._id) {
           state.currentRequest = updatedRequest;
         }
       })
       
-      // Fetch provider requests
       .addCase(fetchProviderRequests.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -218,7 +201,6 @@ const requestSlice = createSlice({
 
 export const { clearCurrentRequest, clearErrors } = requestSlice.actions;
 
-// Selectors
 export const selectAllRequests = state => state.requests.items;
 export const selectRequestById = (state, requestId) => 
   state.requests.items.find(request => request._id === requestId);

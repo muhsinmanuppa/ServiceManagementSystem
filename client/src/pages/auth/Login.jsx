@@ -41,7 +41,6 @@ const Login = () => {
       
       if (login.fulfilled.match(result)) {
         console.log('Login result:', result.payload);
-        // Redirection will be handled by useEffect above
       }
     } catch (error) {
       console.error('Login error:', error);

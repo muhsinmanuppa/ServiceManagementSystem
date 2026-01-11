@@ -1,12 +1,14 @@
 import User from '../../models/User.js';
 import { sendVerificationStatusEmail } from '../../utils/emailUtils.js';
 
+
+
 export const getPendingVerifications = async (req, res) => {
   try {
     const providers = await User.find({
       role: 'provider',
       'verificationStatus.status': 'pending'
-    }).select('name email description document verificationStatus createdAt');
+    }).select('name email description document verificationStatus createdAt bio businessName phone address experience');
 
     res.json({ success: true, providers });
   } catch (error) {
@@ -102,7 +104,7 @@ export const getAllProviders = async (req, res) => {
     const { status, search, verificationStatus } = req.query;
     const filter = { role: 'provider' };
 
-    // Add filters
+    // filters
     if (status) filter.status = status;
     if (verificationStatus) filter['verificationStatus.status'] = verificationStatus;
     if (search) {
@@ -135,6 +137,47 @@ export const getAllProviders = async (req, res) => {
     });
   }
 };
+
+export const getAllUsers = async (req, res) => {
+  try {
+    console.log('Fetching Users with query:', req.query);
+    const { status, search, verificationStatus } = req.query;
+
+    const filter = { role: { $in: ['provider', 'client'] } };
+
+    if (status) filter.status = status;
+    if (verificationStatus) filter['verificationStatus.status'] = verificationStatus;
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    console.log('Final filter:', filter);
+
+    const users = await User.find(filter)
+      .select('name email description verificationStatus document createdAt status role')
+      .sort({ createdAt: -1 });
+
+    console.log(`Found ${users.length} users`);
+
+    res.json({ 
+      success: true, 
+      users,
+      query: req.query,
+      filter
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch users',
+      error: error.message
+    });
+  }
+};
+
 
 export const updateProviderStatus = async (req, res) => {
   try {

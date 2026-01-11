@@ -8,7 +8,6 @@ import { formatPrice } from '../../utils/serviceUtils';
 
 const ClientBookings = () => {
   const dispatch = useDispatch();
-  // Fix the selector to properly access the bookings state
   const bookings = useSelector(state => state.booking?.items || []);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -50,9 +49,7 @@ const ClientBookings = () => {
     }
   };
   
-  // Filter bookings based on status and search term
   const filteredBookings = bookings.filter(booking => {
-    // Skip items with missing service property
     if (!booking || !booking.service || !booking.provider) return false;
     
     const matchesFilter = filter === 'all' || booking.status === filter;
@@ -168,7 +165,7 @@ const ClientBookings = () => {
                   <td>
                     <div className="btn-group btn-group-sm">
                       <Link 
-                        to={`./${booking._id}`} // Use relative path
+                        to={`./${booking._id}`} 
                         className="btn btn-outline-primary"
                       >
                         View Details

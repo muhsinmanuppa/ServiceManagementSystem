@@ -68,7 +68,7 @@ export const getFeaturedServices = async (req, res) => {
     try {
         const services = await Service.find({ 
             status: 'active',
-            // Add any featured criteria you need
+            // lets add new conditin for later
         })
         .populate('category', 'name')
         .populate('provider', 'name email rating')
@@ -114,7 +114,7 @@ export const searchServices = async (req, res) => {
 export const getServiceCalendar = async (req, res) => {
     try {
         const { serviceId } = req.params;
-        // Add your calendar logic here
+       
         res.json({
             success: true,
             message: 'Calendar functionality to be implemented'
@@ -127,5 +127,3 @@ export const getServiceCalendar = async (req, res) => {
     }
 };
 
-// Add other methods (getFeaturedServices, searchServices, etc.) as needed
-// ...

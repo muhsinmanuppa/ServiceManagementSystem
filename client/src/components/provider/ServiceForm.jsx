@@ -7,11 +7,9 @@ import { fetchCategories } from '../../store/slices/categorySlice';
 import ImageUpload from '../ImageUpload';
 import LoadingSpinner from '../LoadingSpinner';
 
-// Add this validation function above the component
 const validateForm = (data) => {
   const errors = {};
   
-  // Title validation
   if (!data.title?.trim()) {
     errors.title = 'Title is required';
   } else if (data.title.length < 3) {
@@ -20,7 +18,6 @@ const validateForm = (data) => {
     errors.title = 'Title cannot exceed 100 characters';
   }
 
-  // Description validation
   if (!data.description?.trim()) {
     errors.description = 'Description is required';
   } else if (data.description.length < 20) {
@@ -29,7 +26,6 @@ const validateForm = (data) => {
     errors.description = 'Description cannot exceed 1000 characters';
   }
 
-  // Price validation
   const price = Number(data.price);
   if (!data.price || price <= 0) {
     errors.price = 'Price must be greater than 0';
@@ -37,12 +33,10 @@ const validateForm = (data) => {
     errors.price = 'Price cannot exceed ₹10,00,000';
   }
 
-  // Category validation
   if (!data.category) {
     errors.category = 'Please select a category';
   }
 
-  // Image validation
   if (!data.image && !data.existingImage) {
     errors.image = 'Please upload a service image';
   }
@@ -68,7 +62,6 @@ const ServiceForm = ({ service = null, onSuccess }) => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // Updated form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormErrors({});
@@ -88,18 +81,14 @@ const ServiceForm = ({ service = null, onSuccess }) => {
       const action = service ? updateService : createService;
       const payload = new FormData();
 
-      // Append basic fields
       payload.append('title', formData.title.trim());
       payload.append('description', formData.description.trim());
       payload.append('price', formData.price);
       payload.append('category', formData.category);
 
-      // Handle single image upload
       if (formData.image instanceof File) {
         payload.append('serviceImage', formData.image);
       }
-
-      // Handle existing image for updates
       if (service && formData.existingImage) {
         payload.append('existingImage', formData.existingImage);
       }

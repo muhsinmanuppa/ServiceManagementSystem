@@ -12,10 +12,10 @@ const categorySchema = new mongoose.Schema({
     trim: true
   },
   icon: {
-    type: String  // Font icon class or URL
+    type: String  
   },
   imageUrl: {
-    type: String  // Category image URL
+    type: String  
   },
   status: {
     type: String,

@@ -145,7 +145,7 @@ export const getServiceReviews = asyncHandler(async (req, res) => {
       case 'oldest':
         sortOption = { createdAt: 1 };
         break;
-      default: // newest
+      default: 
         sortOption = { createdAt: -1 };
     }
     
@@ -237,7 +237,7 @@ export const updateReview = asyncHandler(async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this review' });
     }
     
-    // Only allow updates if review is recent (e.g., within 30 days)
+    // Only allow updates if review, recent (30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -300,7 +300,6 @@ export const respondToReview = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
     
-    // Ensure the user is the provider who received the review
     if (review.provider.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to respond to this review' });
     }
@@ -320,7 +319,6 @@ export const respondToReview = asyncHandler(async (req, res) => {
   }
 });
 
-// Mark review as helpful (for clients)
 export const markReviewHelpful = asyncHandler(async (req, res) => {
   try {
     const { reviewId } = req.params;
@@ -331,7 +329,6 @@ export const markReviewHelpful = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
     
-    // Increment helpful count
     review.helpfulCount += 1;
     await review.save();
     
@@ -345,7 +342,6 @@ export const markReviewHelpful = asyncHandler(async (req, res) => {
   }
 });
 
-// Report a review (for inappropriate content)
 export const reportReview = asyncHandler(async (req, res) => {
   try {
     const { reviewId } = req.params;
@@ -361,12 +357,10 @@ export const reportReview = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
     
-    // Mark as reported
     review.reportedCount += 1;
     review.isReported = true;
     review.reportReason = reason;
     
-    // If reported more than threshold times, change status to pending for admin review
     if (review.reportedCount >= 3) {
       review.status = 'pending';
     }
@@ -381,3 +375,36 @@ export const reportReview = asyncHandler(async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+export const addReviewForBooking = async (req, res, next) => {
+  try {
+    const { bookingId } = req.params;
+    const rawScore = req.body.score ?? req.body.rating ?? req.body?.rating?.score;
+    const comment = req.body.comment ?? req.body.review ?? '';
+
+    const score = Number(rawScore);
+    if (isNaN(score) || score < 1 || score > 5) {
+      return res.status(400).json({ success: false, message: 'Invalid rating: must be a number between 1 and 5' });
+    }
+
+    const userId = req.user._id;
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    booking.rating = {
+      score,
+      comment,
+      reviewer: userId,
+      createdAt: new Date()
+    };
+
+    await booking.save();
+
+    return res.json({ success: true, booking });
+  } catch (err) {
+    return next(err);
+  }
+};
+

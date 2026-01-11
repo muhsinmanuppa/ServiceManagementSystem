@@ -16,10 +16,11 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import AuthGuard from "./components/AuthGuard";
 import VerifyOtp from "./pages/auth/VerifyOtp";
 import LoadingSpinner from "./components/LoadingSpinner";
+import Notification from './components/Notification';  
 import {
   validateLocalSession,
   validateSessionAsync,
-} from "./store/slices/authSlice"; // Add this import
+} from "./store/slices/authSlice"; 
 
 // Client module pages
 import BookingDetail from "./pages/client/BookingDetail";
@@ -60,7 +61,6 @@ const getDefaultPath = (role) => {
   }
 };
 
-// Add RootRedirect component definition
 const RootRedirect = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -74,7 +74,6 @@ const RootRedirect = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  // Return loading spinner while redirect happens
   return <LoadingSpinner />;
 };
 
@@ -83,13 +82,13 @@ function App() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    // First check local session
+    // local session
     dispatch(validateLocalSession());
-    // Then validate with server
+    // validate server
     dispatch(validateSessionAsync());
   }, [dispatch]);
 
-  // Add router configuration
+  // router configuration
   const routerConfig = {
     future: {
       v7_startTransition: true,
@@ -100,6 +99,7 @@ function App() {
   return (
     <ErrorBoundary>
       <Router {...routerConfig}>
+        <Notification />
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -160,7 +160,6 @@ function App() {
           {/* 404 Route */}
           <Route path="*" element={<Navigate to="/" replace />} />
 
-          {/* Make sure you have this route defined */}
           <Route path="/client/bookings/:id" element={<BookingDetail />} />
         </Routes>
       </Router>

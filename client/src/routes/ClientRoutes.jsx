@@ -4,7 +4,6 @@ import Services from '../pages/client/Services';
 import Profile from '../pages/client/Profile';
 import Settings from '../pages/client/Settings';
 import Reviews from '../pages/client/Reviews';
-import Help from '../pages/client/Help';
 import ClientBookings from '../pages/client/Bookings';
 import BookingDetail from '../pages/client/BookingDetail';
 

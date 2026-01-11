@@ -33,7 +33,6 @@ const ProviderBookings = () => {
         notes 
       })).unwrap();
       
-      // Close modal if open
       setStatusModal({ open: false, booking: null });
       
       dispatch(showNotification({
@@ -53,7 +52,6 @@ const ProviderBookings = () => {
   };
 
   const filteredBookings = Array.isArray(bookings) ? bookings.filter(booking => {
-    // Skip items with missing required properties
     if (!booking || !booking.service || !booking.client) return false;
     return filter === 'all' || booking.status === filter;
   }) : [];

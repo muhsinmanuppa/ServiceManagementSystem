@@ -1,13 +1,10 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
-// Load environment variables
 dotenv.config();
 
-// Create reusable transporter with proper error handling
 const createTransporter = () => {
   try {
-    // Update environment variable names to match .env file
     const config = {
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,

@@ -7,8 +7,8 @@ import { formatPrice } from '../../utils/serviceUtils';
 
 const AdminBookings = () => {
   const dispatch = useDispatch();
-  const bookings = useSelector(selectAllBookings) || []; // Add fallback empty array
-  const loading = useSelector(selectBookingsLoading) || false; // Add fallback value
+  const bookings = useSelector(selectAllBookings) || []; 
+  const loading = useSelector(selectBookingsLoading) || false; 
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -23,9 +23,8 @@ const AdminBookings = () => {
       });
   }, [dispatch]);
 
-  // Filter bookings based on status and search term
   const filteredBookings = Array.isArray(bookings) ? bookings.filter(booking => {
-    // Skip items with missing required properties
+
     if (!booking || !booking.service || !booking.provider || !booking.client) return false;
     
     const matchesFilter = filter === 'all' || booking.status === filter;
