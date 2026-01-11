@@ -31,7 +31,8 @@ const UserList = () => {
 
       if (response.data.success) {
         console.log('Fetched users:', response.data.users);
-        setUsers(response.data.users);
+        setUsers(Array.isArray(response.data.users) ? response.data.users : []);
+
       } else {
         throw new Error(response.data.message || 'Failed to fetch users');
       }
@@ -157,7 +158,7 @@ const UserList = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map(user => (
+              {Array.isArray(users) && users.map(user => (
                 <tr key={user._id}>
                   <td>
                     <Button
@@ -175,7 +176,7 @@ const UserList = () => {
                   <td>{user.email}</td>
                   <td>{getStatusBadge(user.verificationStatus?.status)}</td>
                   <td>{getStatusBadge(user.status || 'active')}</td>
-                  <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                  <td>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</td>
                   <td>
                     <div className="btn-group">
                       {user.status !== 'suspended' ? (
