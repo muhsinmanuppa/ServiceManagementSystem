@@ -31,7 +31,10 @@ const UserList = () => {
 
       if (response.data.success) {
         console.log('Fetched users:', response.data.users);
-        setUsers(Array.isArray(response.data.providers) ? response.data.providers : []);
+        // setUsers(Array.isArray(response.data.users) ? response.data.users : []);
+        const list = response.data.users || response.data.providers || [];
+
+        setUsers(Array.isArray(list) ? list : []);
 
 
       } else {
