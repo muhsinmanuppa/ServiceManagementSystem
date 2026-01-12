@@ -274,7 +274,7 @@ export const addReview = async (req, res) => {
     console.log('Adding review:', { bookingId, rating, review, userId });
 
     // Validate rating
-    if (!rating || rating < 1 || rating > 5) {
+    if (!rating || rating > 1 || rating < 5) {
       return res.status(400).json({
         success: false,
         message: 'Rating must be between 1 and 5'
